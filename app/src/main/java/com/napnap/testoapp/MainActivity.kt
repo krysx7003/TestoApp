@@ -2,6 +2,7 @@
 
 package com.napnap.testoapp
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -22,18 +23,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.napnap.testoapp.dataStores.SettingsStore
 import com.napnap.testoapp.ui.theme.TestoAppTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             TestoAppTheme(true) {
                 val navController = rememberNavController()
                 val context = LocalContext.current.applicationContext
+                val settingsStore = SettingsStore()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -60,7 +67,7 @@ class MainActivity : ComponentActivity() {
                                 MainScreen(values)
                             }
                             composable("SettingsScreen"){
-                                SettingsScreen(values)
+                                SettingsScreen(values,settingsStore)
                             }
                         })
                     }
@@ -68,14 +75,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TestoAppTheme {
-
     }
 }
