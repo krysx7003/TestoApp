@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.TestoAppLight" parent="android:Theme.Material.Light.NoActionBar"/>
-    <style name="Theme.TestoAppDark" parent="android:Theme.Material"/>
-    <style name="Theme.TestoAppLegacy" parent="android:Theme.Material.Light.NoActionBar"/>
+    <style name="Theme.TestoAppLight" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.TestoAppDark" parent="android:Theme.Material" />
+
+    <style name="Theme.TestoAppLegacy" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
