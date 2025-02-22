@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
                         topBar = {
                             TopAppBar(title = {}, colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
-                                titleContentColor = Color.White,
+                                titleContentColor = MaterialTheme.colorScheme.onPrimary,
                             ), actions = { IconButton(onClick = {
                                     if (navController.currentBackStackEntry?.destination?.route != "SettingsScreen"){
                                         navController.navigate("SettingsScreen")
@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                 }){
-                                    Icon(imageVector = Icons.Filled.Settings, contentDescription = "",tint = Color.White)
+                                    Icon(imageVector = Icons.Filled.Settings, contentDescription = "",tint = MaterialTheme.colorScheme.onPrimary)
                             } } )
                         }
                     ) {values -> NavHost(navController = navController, startDestination = "MainScreen", builder = {
