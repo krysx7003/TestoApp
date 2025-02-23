@@ -36,8 +36,8 @@ private val ClassicColorScheme = lightColorScheme(
     primary = BlueMain,
     secondary = BlueBackground,
     background = BlueBackground,
-    onPrimary = Color.Black,
-    onSecondary = Color.Black
+    onPrimary = Color.White,
+    onSecondary = Color.White
 )
 @Composable
 fun TestoAppTheme(
