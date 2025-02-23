@@ -1,4 +1,4 @@
-package com.napnap.testoapp.dataStores
+package com.napnap.testoapp.data.stores
 
 import android.content.Context
 import androidx.datastore.core.DataStore
