@@ -1,59 +1,73 @@
 package com.napnap.testoapp.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.napnap.testoapp.data.stores.SettingsStore
+import kotlinx.coroutines.flow.map
 
 private val DarkColorScheme = darkColorScheme(
-    primary = BlueGrayBackground,
-    secondary = BlueGrayMain,
+    primary = BlueGrayMain,
+    secondary = BlueGrayBackground,
+    background = BlueGrayBackground,
     onPrimary = White,
     onSecondary = Color.Black
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = White,
-    secondary = LightGrey,
+    primary = LightGrey,
+    secondary = White,
+    background = White,
     onPrimary = Color.Black,
     onSecondary = Color.Black
 )
-private val LegacyColorScheme = lightColorScheme(
+
+private val ClassicColorScheme = lightColorScheme(
     primary = BlueMain,
     secondary = BlueBackground,
+    background = BlueBackground,
+    onPrimary = Color.Black,
+    onSecondary = Color.Black
 )
 @Composable
 fun TestoAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
+    settingsStore: SettingsStore,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+    val isDarkMode = isSystemInDarkTheme()
+
+    val light = settingsStore.read("light",context)
+        .map { it == "true" }
+        .collectAsState(initial = !isDarkMode)
+        .value
+    val classic = settingsStore.read("classic",context)
+        .map { it == "true" }
+        .collectAsState(initial = false)
+        .value
+
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        light -> LightColorScheme
+        classic -> ClassicColorScheme
+        else -> DarkColorScheme
     }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = light
         }
     }
 

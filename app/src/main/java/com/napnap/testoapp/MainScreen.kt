@@ -216,13 +216,3 @@ fun Footer() {
         shape = RoundedCornerShape(bottomStart = 15.dp, bottomEnd = 15.dp),
         color = MaterialTheme.colorScheme.primary) {  }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun MainScreenPreview(){
-//    val padding = PaddingValues(16.dp)
-//    TestoAppTheme(true) {
-//        MainScreen(values = padding)
-//    }
-//
-//}

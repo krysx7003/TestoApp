@@ -3,7 +3,6 @@
 package com.napnap.testoapp
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +17,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -30,10 +28,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            TestoAppTheme(true) {
+            val settingsStore = SettingsStore()
+            TestoAppTheme(settingsStore) {
                 val navController = rememberNavController()
-                val context = LocalContext.current.applicationContext
-                val settingsStore = SettingsStore()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -48,7 +45,7 @@ class MainActivity : ComponentActivity() {
                                     if (navController.currentBackStackEntry?.destination?.route != "SettingsScreen"){
                                         navController.navigate("SettingsScreen")
                                     }else{
-                                        Toast.makeText(context,"Ustawienia są otwarte",Toast.LENGTH_SHORT).show()
+                                        navController.navigate("MainScreen")
                                     }
 
                                 }){
