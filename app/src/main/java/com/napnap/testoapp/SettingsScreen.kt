@@ -188,12 +188,15 @@ fun QuizOption(initialValue:String, header:String,key:String,context: Context){
 
 fun saveQuizSettings(number:String, key:String, context: Context){
     val settingsStore = SettingsStore()
-    if(number!=""){
+    val tmp = number.toIntOrNull()
+    if(number.isNotEmpty() && number.toIntOrNull() != null){
         CoroutineScope(Dispatchers.IO).launch {
             settingsStore.save(key,number,context)
         }
         Log.i("SaveQuizSettings","Saved on key $key with value $number")
-    }else{
+    }else if(number.isEmpty()){
         Log.w("SaveQuizSettings","Attempted to save empty string at key $key")
+    }else{
+        Log.w("SaveQuizSettings","Attempted to save string that is not an number at key $key , $tmp")
     }
 }

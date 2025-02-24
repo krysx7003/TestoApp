@@ -1,6 +1,8 @@
 package com.napnap.testoapp
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,14 +29,21 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.napnap.testoapp.data.classes.Quiz
 import com.napnap.testoapp.data.stores.SettingsStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun MainScreen(values: PaddingValues){
@@ -65,7 +74,7 @@ fun MainScreen(values: PaddingValues){
                     HistoryList()
                 }
             }
-            Log.i("HistoryList","List is hidden ${visible.value} ")
+            Log.i("HistoryList","List is hidden ${!visible.value} ")
             Footer()
         }
     }
@@ -73,12 +82,13 @@ fun MainScreen(values: PaddingValues){
 
 @Composable
 fun ContinueButton(){
+    val context = LocalContext.current.applicationContext
     Button(
         modifier = Modifier
             .fillMaxWidth()
             .size(60.dp)
             .padding(vertical = 0.dp),
-        onClick = { continueQuiz() },
+        onClick = { continueQuiz(context) },
         shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp)
     ) {
         Icon(imageVector = Icons.Filled.PlayArrow,
@@ -95,12 +105,18 @@ fun ContinueButton(){
     Divider(color = MaterialTheme.colorScheme.onSecondary, thickness = 2.dp)
 }
 
-fun continueQuiz(){
+fun continueQuiz(context: Context){
     val settingsStore = SettingsStore()
-    //TODO - Dodać funkcjonalność
-    val name = ""
-    Log.i("ContinueQuiz","Continuing Quiz $name")
-    startQuiz(name)
+    val name = runBlocking {
+        settingsStore.read("lastQuiz", context).first() ?: ""
+    }
+    if(name.isNotEmpty()){
+        Log.i("ContinueQuiz","Continuing Quiz $name")
+        startQuiz(name,context)
+    }else{
+        Toast.makeText(context,"Nie można kontynuować",Toast.LENGTH_SHORT).show()
+        Log.w("ContinueQuiz","Attempted to continue null quiz")
+    }
 }
 
 @Composable
@@ -159,6 +175,7 @@ fun HistoryButton(visible : MutableState<Boolean>){
 
 @Composable
 fun HistoryList(){
+    val context = LocalContext.current.applicationContext
     //TODO - To powininno być w viewModelu
     val itemList = listOf(
         Quiz("Task 1", 85.5, "12:30:45"),
@@ -177,7 +194,7 @@ fun HistoryList(){
                 modifier = Modifier
                     .fillMaxWidth()
                     .size(40.dp)
-                    .clickable{startQuiz(item.name)}
+                    .clickable{startQuiz(item.name,context)}
                     .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -205,10 +222,14 @@ fun HistoryList(){
     }
 }
 
-fun startQuiz(dirName:String){
+fun startQuiz(dirName:String,context: Context){
     val settingsStore = SettingsStore()
-    //TODO - Dodać funkcjonalność
-    Log.i("StartQuiz","Starting Quiz $dirName on path ")
+    CoroutineScope(Dispatchers.IO).launch {
+        settingsStore.save("lastQuiz",dirName,context)
+        Log.i("SaveQuiz","Last Quiz is $dirName ")
+    }
+    Log.i("StartQuiz","Starting Quiz $dirName")
+    //TODO - Przejdź do QuestionActivity
 }
 
 @Composable
