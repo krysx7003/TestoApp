@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.napnap.testoapp.data.classes.Quiz
+import com.napnap.testoapp.data.stores.SettingsStore
 
 @Composable
 fun MainScreen(values: PaddingValues){
@@ -95,6 +96,7 @@ fun ContinueButton(){
 }
 
 fun continueQuiz(){
+    val settingsStore = SettingsStore()
     //TODO - Dodać funkcjonalność
     val name = ""
     Log.i("ContinueQuiz","Continuing Quiz $name")
@@ -204,6 +206,8 @@ fun HistoryList(){
 }
 
 fun startQuiz(dirName:String){
+    val settingsStore = SettingsStore()
+    //TODO - Dodać funkcjonalność
     Log.i("StartQuiz","Starting Quiz $dirName on path ")
 }
 

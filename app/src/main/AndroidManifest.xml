@@ -14,15 +14,21 @@
         tools:targetApi="31">
         <activity
             android:name=".QuestionActivity"
+            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait"
+            android:hardwareAccelerated="true"
             android:exported="false"
             android:label="@string/title_activity_question"
-            android:theme="@style/Theme.TestoAppLight" />
+            android:theme="@style/Theme.TestoAppLight"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity" />
         <activity
             android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait"
+            android:hardwareAccelerated="true"
             android:exported="true"
-            android:theme="@style/Theme.TestoAppLight">
+            android:theme="@style/Theme.TestoAppLight"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

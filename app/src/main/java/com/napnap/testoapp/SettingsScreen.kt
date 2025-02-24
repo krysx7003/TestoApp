@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Checkbox
@@ -40,13 +42,22 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(values: PaddingValues,settingsStore: SettingsStore){
+    val context = LocalContext.current.applicationContext
     Column(
-        modifier = Modifier.fillMaxSize().padding(values),
+        modifier = Modifier
+            .fillMaxSize()
     ) {
-        val context = LocalContext.current.applicationContext
-        ThemeOptions(context,settingsStore)
-        QuizOptions(context,settingsStore)
-    }
+        LazyColumn (
+            modifier = Modifier.weight(1f).fillMaxWidth().padding(values).imePadding(),
+        ) {
+            item{
+                ThemeOptions(context,settingsStore)
+            }
+            item{
+                QuizOptions(context,settingsStore)
+            }
+        }
+        }
 }
 
 @Composable
@@ -71,23 +82,23 @@ fun ThemeOptions(context: Context, settingsStore: SettingsStore){
             modifier = Modifier.padding(10.dp)
         )
         val darkTheme = listOf(true,false,false)
-        ThemeOption(dark,darkTheme,"Ciemny",context,settingsStore)
+        ThemeOption(dark,darkTheme,"Ciemny",context)
         val lightTheme = listOf(false,true,false)
-        ThemeOption(light,lightTheme,"Jasny",context,settingsStore)
+        ThemeOption(light,lightTheme,"Jasny",context)
         val classicTheme = listOf(false,false,true)
-        ThemeOption(classic,classicTheme,"Klasyczny",context,settingsStore)
+        ThemeOption(classic,classicTheme,"Klasyczny",context)
     }
     Divider(color = MaterialTheme.colorScheme.onSecondary, thickness = 1.dp)
 }
 
 @Composable
-fun ThemeOption(theme:Boolean, themes:List<Boolean>,header: String, context: Context, settingsStore: SettingsStore){
+fun ThemeOption(theme:Boolean, themes:List<Boolean>,header: String, context: Context){
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
             .clickable{
-                saveThemesSettings(dark = themes[0],light = themes[1], classic = themes[2],context,settingsStore)
+                saveThemesSettings(dark = themes[0],light = themes[1], classic = themes[2],context)
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -97,8 +108,8 @@ fun ThemeOption(theme:Boolean, themes:List<Boolean>,header: String, context: Con
     }
 }
 
-fun saveThemesSettings(dark:Boolean, light: Boolean, classic:Boolean, context: Context, settingsStore: SettingsStore){
-    //TODO - Przejście jest bardzo widoczne, można to poprawić?
+fun saveThemesSettings(dark:Boolean, light: Boolean, classic:Boolean,context: Context){
+    val settingsStore = SettingsStore()
     CoroutineScope(Dispatchers.IO).launch {
         settingsStore.save("dark",dark.toString(),context)
         settingsStore.save("light",light.toString(),context)
@@ -132,15 +143,15 @@ fun QuizOptions(context: Context,settingsStore: SettingsStore){
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(10.dp)
             )
-            QuizOption(repeatAmount,"Liczba dodatkowych powtórzeń przy błędnej odpowiedzi","repeatAmount",context, settingsStore)
-            QuizOption(startAmount,"Wstępna liczba powtórzeń","startAmount",context, settingsStore)
-            QuizOption(maxAmount,"Maksymalna liczba powtórzeń","maxAmount",context, settingsStore)
+            QuizOption(repeatAmount,"Liczba dodatkowych powtórzeń przy błędnej odpowiedzi","repeatAmount",context)
+            QuizOption(startAmount,"Wstępna liczba powtórzeń","startAmount",context)
+            QuizOption(maxAmount,"Maksymalna liczba powtórzeń","maxAmount",context)
         }
     }
 }
 
 @Composable
-fun QuizOption(initialValue:String, header:String,key:String,context: Context,settingsStore: SettingsStore){
+fun QuizOption(initialValue:String, header:String,key:String,context: Context){
     val number = remember { mutableStateOf(initialValue) }
     LaunchedEffect(initialValue) {
         number.value = initialValue
@@ -162,7 +173,7 @@ fun QuizOption(initialValue:String, header:String,key:String,context: Context,se
             value = number.value,
             onValueChange = {
                 number.value = it
-                saveQuizSettings(number.value,key,context,settingsStore) },
+                saveQuizSettings(number.value,key,context) },
             textStyle = TextStyle(fontSize = 20.sp),
             colors = TextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.onPrimary,
@@ -175,7 +186,8 @@ fun QuizOption(initialValue:String, header:String,key:String,context: Context,se
     }
 }
 
-fun saveQuizSettings(number:String, key:String, context: Context, settingsStore: SettingsStore){
+fun saveQuizSettings(number:String, key:String, context: Context){
+    val settingsStore = SettingsStore()
     if(number!=""){
         CoroutineScope(Dispatchers.IO).launch {
             settingsStore.save(key,number,context)
