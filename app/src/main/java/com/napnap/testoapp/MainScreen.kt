@@ -29,7 +29,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,6 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.napnap.testoapp.data.classes.Quiz
 import com.napnap.testoapp.data.stores.SettingsStore
+import com.napnap.testoapp.ui.theme.Green
+import com.napnap.testoapp.ui.theme.LightGreen
+import com.napnap.testoapp.ui.theme.LightRed
+import com.napnap.testoapp.ui.theme.Red
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -140,7 +143,15 @@ fun LoadButton(){
 
 fun loadQuiz() {
     Log.i("LoadQuiz","Loading Quiz ")
-    //TODO - Dodać funkcjonalność
+    /*
+    * TODO - Wyświetla okno dialogowe z wyborem
+    *  Ładowanie z pliku .zip lub z githuba
+    *  Po wybraniu opcji rozpakowuje odpowiedni plik
+    *  Zawartość zostaje zapisana w nowym folderze (Nazwa??)
+    *  Jeśli nazwy się powtarzają usuwamy stary folder i tworzymy nowy
+    *  Nowy quiz zostaje automatycznie odpalony
+    * */
+
 }
 
 @Composable
@@ -178,10 +189,10 @@ fun HistoryList(){
     val context = LocalContext.current.applicationContext
     //TODO - To powininno być w viewModelu
     val itemList = listOf(
-        Quiz("Task 1", 85.5, "12:30:45"),
+        Quiz("Task 1", 23.5, "12:30:45"),
         Quiz("Task 2", 72.3, "08:15:20"),
         Quiz("Task 3", 90.0, "14:05:10"),
-        Quiz("Task 4", 50.0, "10:40:05"),
+        Quiz("Task 4", 49.0, "10:40:05"),
         Quiz("Task 5", 95.6, "09:30:55")
     )
     LazyColumn(
@@ -206,10 +217,17 @@ fun HistoryList(){
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 //TODO - Kolor powinien być zależny od stopnia wykonania
+                val color = when{
+                    item.completion<25.0 -> Red
+                    item.completion<50.0 -> LightRed
+                    item.completion<75.0 -> LightGreen
+                    item.completion>75.0 -> Green
+                    else -> MaterialTheme.colorScheme.onPrimary
+                }
                 Text(text = "${item.completion}%",
                     modifier = Modifier.weight(1f),
                     fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = color,
                     style = MaterialTheme.typography.bodyLarge,)
                 Text(text = item.time,
                     modifier = Modifier.weight(1f),
@@ -224,6 +242,7 @@ fun HistoryList(){
 
 fun startQuiz(dirName:String,context: Context){
     val settingsStore = SettingsStore()
+    //TODO - Sprawdź czy taki folder istnieje
     CoroutineScope(Dispatchers.IO).launch {
         settingsStore.save("lastQuiz",dirName,context)
         Log.i("SaveQuiz","Last Quiz is $dirName ")

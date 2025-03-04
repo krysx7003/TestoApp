@@ -41,7 +41,9 @@ class MainActivity : ComponentActivity() {
                             TopAppBar(title = {}, colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                            ), actions = { IconButton(onClick = {
+                            ), actions = {
+                                //TODO - Przycisk z informacjami
+                                IconButton(onClick = {
                                     if (navController.currentBackStackEntry?.destination?.route != "SettingsScreen"){
                                         navController.navigate("SettingsScreen")
                                     }else{

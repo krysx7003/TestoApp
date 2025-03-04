@@ -10,3 +10,8 @@ val BlueGrayMain = Color(0xFF1A1E22)
 
 val BlueBackground = Color(0xFF075098)
 val BlueMain = Color(0xFF073766)
+
+val Red = Color(0xFFFF0000)
+val LightRed = Color(0xB0FF0000)
+val LightGreen = Color(0xB000FF00)
+val Green = Color(0xFF00FF00)
