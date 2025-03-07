@@ -57,9 +57,9 @@ fun TestoAppTheme(
     val classicState = settingsStore.read("classic",context).map { it == "true" }.collectAsState(initial = null)
     val darkState = settingsStore.read("dark",context).map { it == "true" }.collectAsState(initial = null)
 
-    val light = lightState.value ?: !isDarkMode
+    var light = lightState.value ?: !isDarkMode
     val classic = classicState.value ?: false
-    val dark = darkState.value ?: isDarkMode
+    var dark = darkState.value ?: isDarkMode
 
     val allThemesFalse = !dark && !light && !classic
     Log.i("Theme","Themes are dark = $dark,light = $light,classic = $classic")
@@ -67,7 +67,9 @@ fun TestoAppTheme(
     Log.i("Theme","The values were loaded from storage $hasLoadedFromStorage")
 
     if(allThemesFalse && !hasLoadedFromStorage){
-        saveThemesSettings(isDarkMode,!isDarkMode,false,context)
+        dark = isDarkMode
+        light = !isDarkMode
+        saveThemesSettings(dark,light,false,context)
     }
     val colorScheme = when {
         light -> LightColorScheme
