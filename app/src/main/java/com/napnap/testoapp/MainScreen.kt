@@ -1,6 +1,8 @@
 package com.napnap.testoapp
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -34,9 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.napnap.testoapp.data.classes.Quiz
+import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.Green
 import com.napnap.testoapp.ui.theme.LightGreen
@@ -47,6 +51,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.io.File
 
 @Composable
 fun MainScreen(values: PaddingValues){
@@ -85,13 +90,13 @@ fun MainScreen(values: PaddingValues){
 
 @Composable
 fun ContinueButton(){
-    val context = LocalContext.current.applicationContext
+    val localContext = LocalContext.current
     Button(
         modifier = Modifier
             .fillMaxWidth()
             .size(60.dp)
             .padding(vertical = 0.dp),
-        onClick = { continueQuiz(context) },
+        onClick = { continueQuiz(localContext) },
         shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp)
     ) {
         Icon(imageVector = Icons.Filled.PlayArrow,
@@ -108,16 +113,16 @@ fun ContinueButton(){
     Divider(color = MaterialTheme.colorScheme.onSecondary, thickness = 2.dp)
 }
 
-fun continueQuiz(context: Context){
+fun continueQuiz(localContext:Context){
     val settingsStore = SettingsStore()
     val name = runBlocking {
-        settingsStore.read("lastQuiz", context).first() ?: ""
+        settingsStore.read("lastQuiz", localContext).first() ?: ""
     }
     if(name.isNotEmpty()){
         Log.i("ContinueQuiz","Continuing Quiz $name")
-        startQuiz(name,context)
+        startQuiz(name, localContext)
     }else{
-        Toast.makeText(context,"Nie można kontynuować",Toast.LENGTH_SHORT).show()
+        Toast.makeText(localContext,"Nie można kontynuować",Toast.LENGTH_SHORT).show()
         Log.w("ContinueQuiz","Attempted to continue null quiz")
     }
 }
@@ -186,7 +191,6 @@ fun HistoryButton(visible : MutableState<Boolean>){
 
 @Composable
 fun HistoryList(){
-    val context = LocalContext.current.applicationContext
     //TODO - To powininno być w viewModelu
     val itemList = listOf(
         Quiz("Task 1", 23.5, "12:30:45"),
@@ -196,6 +200,7 @@ fun HistoryList(){
         Quiz("Task 5", 95.6, "09:30:55")
     )
     //TODO - Nazwy kolumn?
+    val localContext = LocalContext.current
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -206,24 +211,25 @@ fun HistoryList(){
                 modifier = Modifier
                     .fillMaxWidth()
                     .size(40.dp)
-                    .clickable{startQuiz(item.name,context)}
+                    .clickable{startQuiz(item.name,localContext)}
                     .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ){
-                //TODO - Co się stanie gdy nazwa będzie bardzo długa
                 Text(text = item.name,
                     modifier = Modifier.weight(1f),
                     fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 //TODO - Kolor powinien być zależny od stopnia wykonania
                 val color = when{
-                    item.completion<25.0 -> Red
-                    item.completion<50.0 -> LightRed
-                    item.completion<75.0 -> LightGreen
-                    item.completion>75.0 -> Green
+                    item.completion<25.0 -> LightRed
+                    item.completion<50.0 -> Red
+                    item.completion<75.0 -> Green
+                    item.completion>75.0 -> LightGreen
                     else -> MaterialTheme.colorScheme.onPrimary
                 }
                 Text(text = "${item.completion}%",
@@ -242,25 +248,37 @@ fun HistoryList(){
     }
 }
 
-fun startQuiz(dirName:String,context: Context){
+fun startQuiz(dirName:String,localContext: Context){
     val settingsStore = SettingsStore()
-    if(dirExists(dirName)){
+    if(isValidDir(localContext,dirName)){
         CoroutineScope(Dispatchers.IO).launch {
-            settingsStore.save("lastQuiz",dirName,context)
+            settingsStore.save("lastQuiz",dirName,localContext)
             Log.i("SaveQuiz","Last Quiz is $dirName ")
         }
         Log.i("StartQuiz","Starting Quiz $dirName")
-        //TODO - Przejdź do QuestionActivity
+        val activity = localContext as? Activity
+        activity?.let {
+            val intent = Intent(it,MainActivity::class.java).apply {
+                putExtra("dir_name",dirName)
+            }
+            it.startActivity(intent)
+        }
     }else{
-        Toast.makeText(context,"Wybrany quiz nie istnieje",Toast.LENGTH_SHORT).show()
+        Toast.makeText(localContext,"Wybrany quiz nie istnieje",Toast.LENGTH_SHORT).show()
         Log.w("StartQuiz","There is no Quiz or dir $dirName")
     }
 }
 
-fun dirExists(dirName: String):Boolean{
-    //TODO - Sprawdź czy taki folder istnieje
-    //TODO - Sprawdź czy taki folder zawiera poprawne dane
-    return false
+fun isValidDir(context: Context,dirName: String):Boolean{
+    val dir = File(context.filesDir, "$baseDirName/$dirName")
+    Log.i("IsValid","Dir $dirName exists ${dir.exists()} and is dir ${dir.isDirectory}")
+    return dir.exists() && dir.isDirectory && containsTxtFiles(dir)
+}
+
+fun containsTxtFiles(dir:File):Boolean{
+    val txtFiles = dir.listFiles { _, name -> name.endsWith(".txt") } ?: return false
+    Log.i("ContainsFiles","Dir ${dir.name} contains $txtFiles files")
+    return txtFiles.size > 2
 }
 
 @Composable

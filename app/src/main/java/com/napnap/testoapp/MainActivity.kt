@@ -2,7 +2,9 @@
 
 package com.napnap.testoapp
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,15 +23,18 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.napnap.testoapp.data.classes.Info
 import com.napnap.testoapp.data.classes.Main
 import com.napnap.testoapp.data.classes.Settings
+import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.TestoAppTheme
 import kotlinx.coroutines.flow.map
+import java.io.File
 
 class MainActivity : ComponentActivity() {
 
@@ -38,6 +43,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val settingsStore = SettingsStore()
             TestoAppTheme(settingsStore) {
+                val context = LocalContext.current.applicationContext
+                createBaseDir(context, baseDirName)
                 val navController = rememberNavController()
                 val currentRoute by navController.currentBackStackEntryFlow
                     .map { it.destination.route }
@@ -108,4 +115,21 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+fun createBaseDir(context: Context, dirName: String):File?{
+    val dir = File(context.filesDir,dirName)
+    return if (!dir.exists()) {
+        if (dir.mkdir()) {
+            Log.i("CreateDirectory", "Directory created at: ${dir.absolutePath}")
+            dir
+        } else {
+            Log.e("CreateDirectory", "Failed to create directory")
+            null
+        }
+    } else {
+        Log.w("CreateDirectory", "Directory already exists: ${dir.absolutePath}")
+        dir
+    }
+
 }
