@@ -1,1 +1,12 @@
 # Testownik PWR 
+    - [ ] Wczytywanie plików z .zip
+    - [ ] Parsowanie pliów .txt na pytania
+    - [ ] Obrazy w tekście pytania lub odpowiedziach
+    - [ ] Można zaznaczyć pytanie jako odpowiedź
+    - [ ] Dobre odpowiedzi na zielono, złe na czerwono nie zaznaczone na żółto
+    - [ ] Losowa kolejność pytań
+    - [ ] Losowa kolekność odpowiedzi
+    - [ ] Licznik wystąpień dobra odpowiedź -X, zła +X
+    - [ ] Całkowita ilość pytań
+    - [ ] Stosunek poprawnych odpowiedzi do złych
+    - [ ] Licznik zaliczonych pytań

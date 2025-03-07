@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -20,6 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.napnap.testoapp.data.classes.Info
+import com.napnap.testoapp.data.classes.Main
+import com.napnap.testoapp.data.classes.Settings
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.TestoAppTheme
 
@@ -42,24 +46,32 @@ class MainActivity : ComponentActivity() {
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 titleContentColor = MaterialTheme.colorScheme.onPrimary,
                             ), actions = {
-                                //TODO - Przycisk z informacjami
+                                //TODO - Schowaj przyciski gdy jesteś w odpowiednim miejscu
                                 IconButton(onClick = {
-                                    if (navController.currentBackStackEntry?.destination?.route != "SettingsScreen"){
-                                        navController.navigate("SettingsScreen")
+                                    if (navController.currentBackStackEntry?.destination?.route != Info){
+                                        navController.navigate(Info)
                                     }else{
-                                        navController.navigate("MainScreen")
+                                        navController.navigate(Main)
                                     }
-
-                                }){
-                                    Icon(imageVector = Icons.Filled.Settings, contentDescription = "",tint = MaterialTheme.colorScheme.onPrimary)
-                            } } )
+                                }){ Icon(imageVector = Icons.Filled.Info, contentDescription = "",tint = MaterialTheme.colorScheme.onPrimary)}
+                                IconButton(onClick = {
+                                    if (navController.currentBackStackEntry?.destination?.route != Settings){
+                                        navController.navigate(Settings)
+                                    }else{
+                                        navController.navigate(Main)
+                                    }
+                                }){ Icon(imageVector = Icons.Filled.Settings, contentDescription = "",tint = MaterialTheme.colorScheme.onPrimary) }
+                            } )
                         }
-                    ) {values -> NavHost(navController = navController, startDestination = "MainScreen", builder = {
-                            composable("MainScreen"){
+                    ) {values -> NavHost(navController = navController, startDestination = Main, builder = {
+                            composable(Main){
                                 MainScreen(values)
                             }
-                            composable("SettingsScreen"){
+                            composable(Settings){
                                 SettingsScreen(values,settingsStore)
+                            }
+                            composable(Info) {
+                                InfoScreen(values)
                             }
                         })
                     }

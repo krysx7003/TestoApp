@@ -195,6 +195,7 @@ fun HistoryList(){
         Quiz("Task 4", 49.0, "10:40:05"),
         Quiz("Task 5", 95.6, "09:30:55")
     )
+    //TODO - Nazwy kolumn?
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -210,6 +211,7 @@ fun HistoryList(){
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ){
+                //TODO - Co się stanie gdy nazwa będzie bardzo długa
                 Text(text = item.name,
                     modifier = Modifier.weight(1f),
                     fontSize = 20.sp,
@@ -242,13 +244,23 @@ fun HistoryList(){
 
 fun startQuiz(dirName:String,context: Context){
     val settingsStore = SettingsStore()
-    //TODO - Sprawdź czy taki folder istnieje
-    CoroutineScope(Dispatchers.IO).launch {
-        settingsStore.save("lastQuiz",dirName,context)
-        Log.i("SaveQuiz","Last Quiz is $dirName ")
+    if(dirExists(dirName)){
+        CoroutineScope(Dispatchers.IO).launch {
+            settingsStore.save("lastQuiz",dirName,context)
+            Log.i("SaveQuiz","Last Quiz is $dirName ")
+        }
+        Log.i("StartQuiz","Starting Quiz $dirName")
+        //TODO - Przejdź do QuestionActivity
+    }else{
+        Toast.makeText(context,"Wybrany quiz nie istnieje",Toast.LENGTH_SHORT).show()
+        Log.w("StartQuiz","There is no Quiz or dir $dirName")
     }
-    Log.i("StartQuiz","Starting Quiz $dirName")
-    //TODO - Przejdź do QuestionActivity
+}
+
+fun dirExists(dirName: String):Boolean{
+    //TODO - Sprawdź czy taki folder istnieje
+    //TODO - Sprawdź czy taki folder zawiera poprawne dane
+    return false
 }
 
 @Composable

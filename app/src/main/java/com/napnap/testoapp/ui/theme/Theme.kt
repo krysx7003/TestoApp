@@ -1,6 +1,8 @@
 package com.napnap.testoapp.ui.theme
 
 import android.app.Activity
+import android.content.Context
+import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -15,7 +17,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.napnap.testoapp.data.stores.SettingsStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 private val DarkColorScheme = darkColorScheme(
     primary = BlueGrayMain,
@@ -48,18 +53,26 @@ fun TestoAppTheme(
     val context = LocalContext.current
     val isDarkMode = isSystemInDarkTheme()
 
-    val light = settingsStore.read("light",context)
-        .map { it == "true" }
-        .collectAsState(initial = !isDarkMode)
-        .value
-    val classic = settingsStore.read("classic",context)
-        .map { it == "true" }
-        .collectAsState(initial = false)
-        .value
+    val lightState = settingsStore.read("light",context).map { it == "true" }.collectAsState(initial = null)
+    val classicState = settingsStore.read("classic",context).map { it == "true" }.collectAsState(initial = null)
+    val darkState = settingsStore.read("dark",context).map { it == "true" }.collectAsState(initial = null)
 
+    val light = lightState.value ?: !isDarkMode
+    val classic = classicState.value ?: false
+    val dark = darkState.value ?: isDarkMode
+
+    val allThemesFalse = !dark && !light && !classic
+    Log.i("Theme","Themes are dark = $dark,light = $light,classic = $classic")
+    val hasLoadedFromStorage = lightState.value != null && classicState.value != null && darkState.value != null
+    Log.i("Theme","The values were loaded from storage $hasLoadedFromStorage")
+
+    if(allThemesFalse && !hasLoadedFromStorage){
+        saveThemesSettings(isDarkMode,!isDarkMode,false,context)
+    }
     val colorScheme = when {
         light -> LightColorScheme
         classic -> ClassicColorScheme
+        dark -> DarkColorScheme
         else -> DarkColorScheme
     }
 
@@ -71,11 +84,24 @@ fun TestoAppTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = light
         }
     }
-    Crossfade(targetState = colorScheme) { scheme ->
-        MaterialTheme(
-            colorScheme = scheme,
-            typography = Typography,
-            content = content
-        )
+
+    if(hasLoadedFromStorage){
+        Crossfade(targetState = colorScheme) { scheme ->
+            MaterialTheme(
+                colorScheme = scheme,
+                typography = Typography,
+                content = content
+            )
+        }
     }
+}
+
+fun saveThemesSettings(dark:Boolean, light: Boolean, classic:Boolean,context: Context){
+    val settingsStore = SettingsStore()
+    CoroutineScope(Dispatchers.IO).launch {
+        settingsStore.save("dark",dark.toString(),context)
+        settingsStore.save("light",light.toString(),context)
+        settingsStore.save("classic",classic.toString(),context)
+    }
+    Log.i("SaveThemesSettings","Saved themes dark = $dark,light = $light,classic = $classic")
 }
