@@ -18,18 +18,25 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.napnap.testoapp.data.classes.Info
+import com.napnap.testoapp.data.classes.InfoString
 import com.napnap.testoapp.data.classes.Main
+import com.napnap.testoapp.data.classes.MainString
 import com.napnap.testoapp.data.classes.Settings
+import com.napnap.testoapp.data.classes.SettingsString
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.TestoAppTheme
@@ -49,6 +56,7 @@ class MainActivity : ComponentActivity() {
                 val currentRoute by navController.currentBackStackEntryFlow
                     .map { it.destination.route }
                     .collectAsState(initial = Main)
+                var header by remember { mutableStateOf(MainString) }
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -56,7 +64,12 @@ class MainActivity : ComponentActivity() {
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),
                         topBar = {
-                            TopAppBar(title = {}, colors = TopAppBarDefaults.topAppBarColors(
+                            TopAppBar(title = {
+                                if(currentRoute == Main){
+                                    header = MainString
+                                }
+                                Text(header,color = MaterialTheme.colorScheme.onPrimary)
+                            }, colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 titleContentColor = MaterialTheme.colorScheme.onPrimary),
                                 navigationIcon = {
@@ -66,7 +79,7 @@ class MainActivity : ComponentActivity() {
                                         }) {
                                             Icon(
                                                 imageVector = Icons.Filled.ArrowBack,
-                                                contentDescription = "Localized description",
+                                                contentDescription = "",
                                                 tint = MaterialTheme.colorScheme.onPrimary
                                             )
                                         }
@@ -76,6 +89,7 @@ class MainActivity : ComponentActivity() {
                                     if (currentRoute != Info) {
                                         IconButton(onClick = {
                                             navController.navigate(Info)
+                                            header = InfoString
                                         }) {
                                             Icon(
                                                 imageVector = Icons.Filled.Info,
@@ -87,6 +101,7 @@ class MainActivity : ComponentActivity() {
                                     if (currentRoute != Settings){
                                         IconButton(onClick = {
                                                 navController.navigate(Settings)
+                                                header = SettingsString
                                         }) {
                                             Icon(
                                                 imageVector = Icons.Filled.Settings,
@@ -131,5 +146,4 @@ fun createBaseDir(context: Context, dirName: String):File?{
         Log.w("CreateDirectory", "Directory already exists: ${dir.absolutePath}")
         dir
     }
-
 }
