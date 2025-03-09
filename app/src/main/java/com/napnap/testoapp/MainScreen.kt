@@ -31,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,7 +40,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.napnap.testoapp.data.classes.Quiz
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.Green
@@ -191,14 +191,8 @@ fun HistoryButton(visible : MutableState<Boolean>){
 
 @Composable
 fun HistoryList(){
-    //TODO - To powininno być w viewModelu
-    val itemList = listOf(
-        Quiz("Task 1", 23.5, "12:30:45"),
-        Quiz("Task 2", 72.3, "08:15:20"),
-        Quiz("Task 3", 90.0, "14:05:10"),
-        Quiz("Task 4", 49.0, "10:40:05"),
-        Quiz("Task 5", 95.6, "09:30:55")
-    )
+    val viewModel = MainViewModel()
+    val items = viewModel.quizHistory.collectAsState()
     //TODO - Nazwy kolumn?
     val localContext = LocalContext.current
     LazyColumn(
@@ -206,7 +200,7 @@ fun HistoryList(){
             .fillMaxWidth()
             .padding(vertical = 0.dp),
     ) {
-        items(itemList) { item ->
+        items(items.value) { item ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -224,7 +218,7 @@ fun HistoryList(){
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                //TODO - Kolor powinien być zależny od stopnia wykonania
+                //TODO - Kolor do zmiany
                 val color = when{
                     item.completion<25.0 -> LightRed
                     item.completion<50.0 -> Red

@@ -1,6 +1,5 @@
 package com.napnap.testoapp
 
-import android.os.Build.VERSION
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,9 +11,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,17 +27,15 @@ fun InfoScreen(values: PaddingValues){
             .padding(horizontal = 10.dp),
         horizontalAlignment = Alignment.Start,
     ){
+        val viewModel = InfoViewModel()
+        val items = viewModel.changeLog.collectAsState()
+
         val versionName = BuildConfig.VERSION_NAME
         Text("Testownik",fontSize = 30.sp, color = MaterialTheme.colorScheme.onPrimary)
         Text("Autor: Krzysztof Zalewa",fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
         Text("Wersja: $versionName",fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
         Text("Co nowego?",fontSize = 30.sp, color = MaterialTheme.colorScheme.onPrimary)
-        //TODO - To powinno być w ViewModel
-        BulletList(items = listOf(
-            "First bullet",
-            "Second bullet ... which is awfully long but that's not a problem",
-            "Third bullet ",
-        ))
+        BulletList(items = items.value)
     }
 }
 @Composable
