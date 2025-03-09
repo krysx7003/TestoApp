@@ -191,9 +191,9 @@ fun HistoryButton(visible : MutableState<Boolean>){
 
 @Composable
 fun HistoryList(){
+    val localContext = LocalContext.current
     val viewModel = MainViewModel(localContext)
     val items = viewModel.quizHistory.collectAsState()
-    val localContext = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
