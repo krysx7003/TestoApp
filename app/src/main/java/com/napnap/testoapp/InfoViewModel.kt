@@ -1,28 +1,27 @@
 package com.napnap.testoapp
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class InfoViewModel : ViewModel() {
+class InfoViewModel(context: Context) : ViewModel() {
     private val _changeLog = MutableStateFlow<List<String>>(emptyList())
 
     val changeLog = _changeLog.asStateFlow()
 
     init{
-        loadData()
+        loadData(context)
     }
 
-    private fun loadData(){
+    private fun loadData(context: Context){
         viewModelScope.launch {
-            //TODO - To powinno być w jakiś sposób ładowane
-            _changeLog.value = listOf(
-                "First bullet",
-                "Second bullet ... which is awfully long but that's not a problem",
-                "Third bullet ",
-            )
+            val jsonString = context.resources.openRawResource(R.raw.changelog).bufferedReader().use{ it.readText() }
+            _changeLog.value = Gson().fromJson(jsonString, object : TypeToken<List<String>>() {}.type)
         }
     }
 }

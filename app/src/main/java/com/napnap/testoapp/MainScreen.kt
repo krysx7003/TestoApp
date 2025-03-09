@@ -191,55 +191,93 @@ fun HistoryButton(visible : MutableState<Boolean>){
 
 @Composable
 fun HistoryList(){
-    val viewModel = MainViewModel()
+    val viewModel = MainViewModel(localContext)
     val items = viewModel.quizHistory.collectAsState()
-    //TODO - Nazwy kolumn?
     val localContext = LocalContext.current
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 0.dp),
-    ) {
-        items(items.value) { item ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .size(40.dp)
-                    .clickable{startQuiz(item.name,localContext)}
-                    .padding(horizontal = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ){
-                Text(text = item.name,
-                    modifier = Modifier.weight(1f),
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                //TODO - Kolor do zmiany
-                val color = when{
-                    item.completion<25.0 -> LightRed
-                    item.completion<50.0 -> Red
-                    item.completion<75.0 -> Green
-                    item.completion>75.0 -> LightGreen
-                    else -> MaterialTheme.colorScheme.onPrimary
+    ){
+        HistoryHeader()
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            items(items.value) { item ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .size(40.dp)
+                        .clickable{
+                            //TODO - Okno dialogowe z możliwością wyboru czy odnowa czy wznowić
+                            startQuiz(item.name,localContext)
+                        }
+                        .padding(horizontal = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ){
+                    Text(text = item.name,
+                        modifier = Modifier.weight(1f),
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    val color = when{
+                        item.completion<25.0 -> LightRed
+                        item.completion<50.0 -> Red
+                        item.completion<75.0 -> Green
+                        item.completion>75.0 -> LightGreen
+                        else -> MaterialTheme.colorScheme.onPrimary
+                    }
+                    Text(text = "${item.completion}%",
+                        modifier = Modifier.weight(1f),
+                        fontSize = 20.sp,
+                        color = color,
+                        style = MaterialTheme.typography.bodyLarge,)
+                    Text(text = item.time,
+                        modifier = Modifier.weight(1f),
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.bodyLarge,)
                 }
-                Text(text = "${item.completion}%",
-                    modifier = Modifier.weight(1f),
-                    fontSize = 20.sp,
-                    color = color,
-                    style = MaterialTheme.typography.bodyLarge,)
-                Text(text = item.time,
-                    modifier = Modifier.weight(1f),
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.bodyLarge,)
+                Divider(color = MaterialTheme.colorScheme.onSecondary, thickness = 1.dp)
             }
-            Divider(color = MaterialTheme.colorScheme.onSecondary, thickness = 1.dp)
         }
     }
+}
+
+@Composable
+fun HistoryHeader(){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .size(40.dp)
+            .padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ){
+        Text(text = "Nazwa",
+            modifier = Modifier.weight(1f),
+            fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Text(text = "%",
+            modifier = Modifier.weight(1f),
+            fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Text(text = "Czas",
+            modifier = Modifier.weight(1f),
+            fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
+    Divider(color = MaterialTheme.colorScheme.onSecondary, thickness = 1.dp)
 }
 
 fun startQuiz(dirName:String,localContext: Context){
