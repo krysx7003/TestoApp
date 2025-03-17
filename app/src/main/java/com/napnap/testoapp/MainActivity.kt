@@ -39,6 +39,9 @@ import com.napnap.testoapp.data.classes.Settings
 import com.napnap.testoapp.data.classes.SettingsString
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.stores.SettingsStore
+import com.napnap.testoapp.ui.screens.info.InfoScreen
+import com.napnap.testoapp.ui.screens.main.MainScreen
+import com.napnap.testoapp.ui.screens.settings.SettingsScreen
 import com.napnap.testoapp.ui.theme.TestoAppTheme
 import kotlinx.coroutines.flow.map
 import java.io.File
@@ -132,18 +135,23 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-fun createBaseDir(context: Context, dirName: String):File?{
+fun createBaseDir(context: Context, dirName: String){
     val dir = File(context.filesDir,dirName)
-    return if (!dir.exists()) {
+    if (!dir.exists()) {
         if (dir.mkdir()) {
             Log.i("CreateDirectory", "Directory created at: ${dir.absolutePath}")
-            dir
+            File("$baseDirName/history.json").createNewFile()
         } else {
             Log.e("CreateDirectory", "Failed to create directory")
-            null
+
         }
     } else {
-        Log.w("CreateDirectory", "Directory already exists: ${dir.absolutePath}")
-        dir
+        Log.i("CreateDirectory", "Directory already exists: ${dir.absolutePath}")
+        if(!File(context.filesDir,"$baseDirName/history.json").createNewFile()){
+            Log.i("HistoryJson","File $baseDirName/history.json exists")
+        }else{
+            Log.i("HistoryJson","File $baseDirName/history.json created")
+        }
+
     }
 }

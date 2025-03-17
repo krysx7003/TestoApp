@@ -1,4 +1,4 @@
-package com.napnap.testoapp
+package com.napnap.testoapp.ui.screens.main
 
 import android.app.Activity
 import android.content.Context
@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.napnap.testoapp.MainActivity
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.Green
@@ -56,6 +57,9 @@ import java.io.File
 @Composable
 fun MainScreen(values: PaddingValues){
     val visible = remember { mutableStateOf(false) }
+    val loadDialogVisible = remember { mutableStateOf(false) }
+    val startDialogVisible = remember { mutableStateOf(false) }
+    val nameOfItem = remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -70,7 +74,7 @@ fun MainScreen(values: PaddingValues){
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             ContinueButton()
-            LoadButton()
+            LoadButton(loadDialogVisible)
             HistoryButton(visible)
             if(visible.value){
                 Box(
@@ -79,12 +83,27 @@ fun MainScreen(values: PaddingValues){
                         .weight(1f)
                         .background(MaterialTheme.colorScheme.primary)
                 ){
-                    HistoryList()
+                    HistoryList(startDialogVisible,nameOfItem)
                 }
             }
             Log.i("HistoryList","List is hidden ${!visible.value} ")
             Footer()
         }
+    }
+    if(loadDialogVisible.value){
+        LoadDialog(
+            onDismiss = {
+                loadDialogVisible.value = false
+            }
+        )
+    }
+    if(startDialogVisible.value){
+       StartDialog(
+           onDismiss = {
+               startDialogVisible.value = false
+           },
+           nameOfItem = nameOfItem.value
+       )
     }
 }
 
@@ -99,7 +118,8 @@ fun ContinueButton(){
         onClick = { continueQuiz(localContext) },
         shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp)
     ) {
-        Icon(imageVector = Icons.Filled.PlayArrow,
+        Icon(
+            imageVector = Icons.Filled.PlayArrow,
             contentDescription = "",
             tint = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.size(30.dp)
@@ -120,7 +140,7 @@ fun continueQuiz(localContext:Context){
     }
     if(name.isNotEmpty()){
         Log.i("ContinueQuiz","Continuing Quiz $name")
-        startQuiz(name, localContext)
+        startQuiz(name, localContext,true)
     }else{
         Toast.makeText(localContext,"Nie można kontynuować",Toast.LENGTH_SHORT).show()
         Log.w("ContinueQuiz","Attempted to continue null quiz")
@@ -128,13 +148,13 @@ fun continueQuiz(localContext:Context){
 }
 
 @Composable
-fun LoadButton(){
+fun LoadButton(loadDialogVisible:MutableState<Boolean>){
     Button(
         modifier = Modifier
             .fillMaxWidth()
             .size(60.dp)
             .padding(vertical = 0.dp),
-        onClick = { loadQuiz()},
+        onClick = { loadDialogVisible.value = true },
         shape = RoundedCornerShape(0.dp)
     ) {
         Text("Wczytaj",
@@ -144,19 +164,6 @@ fun LoadButton(){
         )
     }
     Divider(color = MaterialTheme.colorScheme.onSecondary, thickness = 2.dp)
-}
-
-fun loadQuiz() {
-    Log.i("LoadQuiz","Loading Quiz ")
-    /*
-    * TODO - Wyświetla okno dialogowe z wyborem
-    *  Ładowanie z pliku .zip lub z githuba
-    *  Po wybraniu opcji rozpakowuje odpowiedni plik
-    *  Zawartość zostaje zapisana w nowym folderze (Nazwa??)
-    *  Jeśli nazwy się powtarzają usuwamy stary folder i tworzymy nowy
-    *  Nowy quiz zostaje automatycznie odpalony
-    * */
-
 }
 
 @Composable
@@ -190,7 +197,7 @@ fun HistoryButton(visible : MutableState<Boolean>){
 }
 
 @Composable
-fun HistoryList(){
+fun HistoryList(startDialogVisible:MutableState<Boolean>,nameOfItem:MutableState<String> ){
     val localContext = LocalContext.current
     val viewModel = MainViewModel(localContext)
     val items = viewModel.quizHistory.collectAsState()
@@ -209,8 +216,8 @@ fun HistoryList(){
                         .fillMaxWidth()
                         .size(40.dp)
                         .clickable{
-                            //TODO - Okno dialogowe z możliwością wyboru czy odnowa czy wznowić
-                            startQuiz(item.name,localContext)
+                            startDialogVisible.value = true
+                            nameOfItem.value = item.name
                         }
                         .padding(horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -280,7 +287,7 @@ fun HistoryHeader(){
     Divider(color = MaterialTheme.colorScheme.onSecondary, thickness = 1.dp)
 }
 
-fun startQuiz(dirName:String,localContext: Context){
+fun startQuiz(dirName:String,localContext: Context,continueQuiz:Boolean){
     val settingsStore = SettingsStore()
     if(isValidDir(localContext,dirName)){
         CoroutineScope(Dispatchers.IO).launch {
@@ -290,8 +297,9 @@ fun startQuiz(dirName:String,localContext: Context){
         Log.i("StartQuiz","Starting Quiz $dirName")
         val activity = localContext as? Activity
         activity?.let {
-            val intent = Intent(it,MainActivity::class.java).apply {
+            val intent = Intent(it, MainActivity::class.java).apply {
                 putExtra("dir_name",dirName)
+                putExtra("continueQuiz",continueQuiz)
             }
             it.startActivity(intent)
         }

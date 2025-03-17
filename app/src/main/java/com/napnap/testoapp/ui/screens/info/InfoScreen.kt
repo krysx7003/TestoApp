@@ -1,4 +1,4 @@
-package com.napnap.testoapp
+package com.napnap.testoapp.ui.screens.info
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.napnap.testoapp.BuildConfig
 
 @Composable
 fun InfoScreen(values: PaddingValues){

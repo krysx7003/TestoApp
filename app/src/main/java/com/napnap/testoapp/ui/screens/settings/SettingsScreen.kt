@@ -1,4 +1,4 @@
-package com.napnap.testoapp
+package com.napnap.testoapp.ui.screens.settings
 
 import android.content.Context
 import android.util.Log
