@@ -40,7 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.napnap.testoapp.MainActivity
+import com.napnap.testoapp.QuizActivity
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.Green
@@ -55,11 +55,11 @@ import kotlinx.coroutines.runBlocking
 import java.io.File
 
 @Composable
-fun MainScreen(values: PaddingValues){
+fun MainScreen(values: PaddingValues,
+                loadDialogVisible:MutableState<Boolean>,
+                startDialogVisible: MutableState<Boolean>,
+                nameOfItem: MutableState<String>){
     val visible = remember { mutableStateOf(false) }
-    val loadDialogVisible = remember { mutableStateOf(false) }
-    val startDialogVisible = remember { mutableStateOf(false) }
-    val nameOfItem = remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -89,21 +89,6 @@ fun MainScreen(values: PaddingValues){
             Log.i("HistoryList","List is hidden ${!visible.value} ")
             Footer()
         }
-    }
-    if(loadDialogVisible.value){
-        LoadDialog(
-            onDismiss = {
-                loadDialogVisible.value = false
-            }
-        )
-    }
-    if(startDialogVisible.value){
-       StartDialog(
-           onDismiss = {
-               startDialogVisible.value = false
-           },
-           nameOfItem = nameOfItem.value
-       )
     }
 }
 
@@ -297,7 +282,7 @@ fun startQuiz(dirName:String,localContext: Context,continueQuiz:Boolean){
         Log.i("StartQuiz","Starting Quiz $dirName")
         val activity = localContext as? Activity
         activity?.let {
-            val intent = Intent(it, MainActivity::class.java).apply {
+            val intent = Intent(it, QuizActivity::class.java).apply {
                 putExtra("dir_name",dirName)
                 putExtra("continueQuiz",continueQuiz)
             }

@@ -2,7 +2,10 @@ package com.napnap.testoapp.ui.screens.main
 
 import Folder
 import Github
+import android.content.Context
+import android.net.Uri
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,11 +27,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.napnap.testoapp.data.classes.QuestionFile
+import com.napnap.testoapp.data.classes.Quiz
+import com.napnap.testoapp.data.classes.baseDirName
+import com.napnap.testoapp.data.stores.SettingsStore
+import java.io.BufferedInputStream
+import java.io.File
+import java.time.LocalDate
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+
 
 @Composable
 fun LoadDialog(
-    onDismiss:()->Unit
+    onDismiss:()->Unit,
+    getUri: ActivityResultLauncher<String>
 ){
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
@@ -88,7 +105,10 @@ fun LoadDialog(
                     Button(
                         modifier = Modifier
                             .weight(1f),
-                        onClick = { loadFromDevice() },
+                        onClick = {
+                            getUri.launch("application/zip")
+                            onDismiss()
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.background
                         )
@@ -127,20 +147,100 @@ fun LoadDialog(
         }
     }
 }
-/*
-    * TODO - Po wybraniu opcji rozpakowuje odpowiedni plik
-    *  Zawartość zostaje zapisana w nowym folderze (Nazwa??)
-    *  Jeśli nazwy się powtarzają usuwamy stary folder i tworzymy nowy
-    *  Nowy quiz zostaje automatycznie odpalony
-    * */
-fun loadFromDevice(){
-    Log.i("LoadQuiz","Loading Quiz from device memory ")
-}
 
 fun loadFromGithub(){
     Log.i("LoadQuiz","Loading Quiz from GitHub ")
 }
 
-//TODO - Rozpakuj zip
+fun emptyDir(dir:File,context: Context){
+    //FIXME - Usuwanie jsona można u ogólnić
+    val jsonFile = context.filesDir.resolve("$baseDirName/history.json")
+    if(jsonFile.exists()){
+        val jsonString = jsonFile.bufferedReader().use{ it.readText() }
+        if(jsonString.isNotEmpty()) {
+            val data: MutableList<Quiz> = Gson().fromJson(jsonString, object : TypeToken<MutableList<Quiz>>() {}.type)
+            val updatedList = data.filter { it.name != dir.name }
+            jsonFile.writeText(Gson().toJson(updatedList))
+        }
+    }
 
-//startQuiz(nameOfItem,context,false)
+    if(dir.isDirectory){
+        val items = dir.listFiles()
+        if (items != null) {
+            for (file in items) {
+                file.delete()
+            }
+        }
+    }
+}
+
+fun handleZipFile(uri: Uri,context: Context){
+
+    //FIXME - HECKING CHONKER
+    val settingsStore = SettingsStore()
+    settingsStore.read("repeatAmount",context)
+    Log.i("HandlingZip","Starting to unzip ${uri.path.toString()}")
+    if(uri.path.toString().isNotEmpty()){
+        val outputDir = File(context.filesDir,baseDirName)
+        val questionFileList = ArrayList<QuestionFile>()
+        var zipName = ""
+        try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val zipInputStream = ZipInputStream(BufferedInputStream(inputStream))
+                var zipEntry: ZipEntry?
+                while (zipInputStream.nextEntry.also { zipEntry = it } != null) {
+                    zipEntry?.let { entry ->
+                        val file = File(outputDir, entry.name)
+                        if (entry.isDirectory) {
+                            if(file.exists()){
+                                emptyDir(file,context)
+                            }else{
+                                file.mkdirs()
+                            }
+                            zipName = entry.name
+                            File(file,"progress.json").createNewFile()
+                        } else {
+                            file.outputStream().use { fileOutput ->
+                                zipInputStream.copyTo(fileOutput)
+                            }
+                            //TODO - liczba powtórzeń powinna być zmienna
+                            if (!file.name.endsWith(".json")){
+                                questionFileList.add(QuestionFile(file.name,2))
+                            }else{}
+                        }
+                    }
+                }
+                zipInputStream.close()
+                Log.i("HandlingZip", "Unzipped successfully to ${outputDir.absolutePath}")
+
+                //FIXME - Pisanie do jsona można u ogólnić
+                val questionJson = Gson().toJson(questionFileList)
+                val jsonFileQ = context.filesDir.resolve("$baseDirName/$zipName/progress.json")
+                jsonFileQ.writeText(questionJson)
+
+                //FIXME - Dodawanie do jsona można u ogólnić
+                val jsonFileH = context.filesDir.resolve("$baseDirName/history.json")
+                if(jsonFileH.exists()){
+                    val jsonString = jsonFileH.bufferedReader().use{ it.readText() }
+                    if(jsonString.isNotEmpty()) {
+                        val data: MutableList<Quiz> = Gson().fromJson(jsonString, object : TypeToken<MutableList<Quiz>>() {}.type)
+                        data.add(Quiz(zipName,0.0,"0:00", LocalDate.now().toString()))
+                        var historyJson  = Gson().toJson(data)
+                        if(data.size==1){
+                            historyJson = "[$historyJson]"
+                        }
+                        jsonFileH.writeText(historyJson)
+                    }else{
+                        var historyJson  = Gson().toJson(Quiz(zipName,0.0,"0:00", LocalDate.now().toString()))
+                        historyJson = "[$historyJson]"
+                        jsonFileH.writeText(historyJson)
+                    }
+                }
+            } ?: Log.e("HandlingZip", "Failed to open input stream")
+
+        } catch (e: Exception) {
+            Log.e("HandlingZip", "Error unzipping file: ${e.message}")
+        }
+    }
+
+}

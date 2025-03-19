@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.TestoAppTheme
 
-class QuestionActivity : ComponentActivity() {
+class QuizActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

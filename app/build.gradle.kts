@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace = "com.napnap.testoapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.napnap.testoapp"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "0.5.1"

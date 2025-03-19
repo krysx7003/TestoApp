@@ -35,7 +35,6 @@ class MainViewModel(context: Context) : ViewModel(){
             }else{
                 Log.w("LoadHistory","File $baseDirName/history.json doesn't exist")
             }
-            _quizHistory.value = listOf(Quiz("test",21.37,"0:00"))
         }
     }
 }
