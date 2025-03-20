@@ -6,7 +6,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.napnap.testoapp.data.classes.QuestionFile
-import com.napnap.testoapp.data.classes.Quiz
+import com.napnap.testoapp.data.classes.QuizData
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.classes.histJson
 import com.napnap.testoapp.data.classes.saveJson
@@ -92,15 +92,15 @@ fun appendJson(context: Context, zipName:String){
     if(jsonFileH.exists()){
         val jsonString = jsonFileH.bufferedReader().use{ it.readText() }
         if(jsonString.isNotEmpty()) {
-            val data: MutableList<Quiz> = Gson().fromJson(jsonString, object : TypeToken<MutableList<Quiz>>() {}.type)
-            data.add(Quiz(zipName,0.0,"0:00", LocalDateTime.now().toString()))
+            val data: MutableList<QuizData> = Gson().fromJson(jsonString, object : TypeToken<MutableList<QuizData>>() {}.type)
+            data.add(QuizData(zipName,0.0,"0:00", LocalDateTime.now().toString()))
             var historyJson  = Gson().toJson(data)
             if(data.size==1 && isJsonArr(historyJson) ){
                 historyJson = "[$historyJson]"
             }
             jsonFileH.writeText(historyJson)
         }else{
-            var historyJson  = Gson().toJson(Quiz(zipName,0.0,"0:00", LocalDateTime.now().toString()))
+            var historyJson  = Gson().toJson(QuizData(zipName,0.0,"0:00", LocalDateTime.now().toString()))
             if(isJsonArr(historyJson)){
                 historyJson = "[$historyJson]"
             }
@@ -114,7 +114,7 @@ fun findAndDelete(context: Context,dir: File){
     if(jsonFile.exists()){
         val jsonString = jsonFile.bufferedReader().use{ it.readText() }
         if(jsonString.isNotEmpty()) {
-            val data: MutableList<Quiz> = Gson().fromJson(jsonString, object : TypeToken<MutableList<Quiz>>() {}.type)
+            val data: MutableList<QuizData> = Gson().fromJson(jsonString, object : TypeToken<MutableList<QuizData>>() {}.type)
             val updatedList = data.filter { it.name != dir.name+"/" }
             jsonFile.writeText(Gson().toJson(updatedList))
         }

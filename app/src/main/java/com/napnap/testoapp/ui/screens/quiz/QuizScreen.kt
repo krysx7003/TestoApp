@@ -1,10 +1,10 @@
-package com.napnap.testoapp
+package com.napnap.testoapp.ui.screens.quiz
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 
 @Composable
-fun QuestionScreen(values: PaddingValues){
+fun QuizScreen(values: PaddingValues){
 
 
 }

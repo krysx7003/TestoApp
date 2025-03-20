@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.napnap.testoapp.QuizActivity
 import com.napnap.testoapp.data.classes.baseDirName
+import com.napnap.testoapp.data.classes.continueExtra
+import com.napnap.testoapp.data.classes.dirNameExtra
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.Green
 import com.napnap.testoapp.ui.theme.LightGreen
@@ -287,8 +289,8 @@ fun startQuiz(dirName:String,localContext: Context,continueQuiz:Boolean){
         val activity = localContext as? Activity
         activity?.let {
             val intent = Intent(it, QuizActivity::class.java).apply {
-                putExtra("dir_name",dirName)
-                putExtra("continueQuiz",continueQuiz)
+                putExtra(dirNameExtra,dirName)
+                putExtra(continueExtra,continueQuiz)
             }
             it.startActivity(intent)
         }

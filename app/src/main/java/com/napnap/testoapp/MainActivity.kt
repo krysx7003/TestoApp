@@ -150,7 +150,8 @@ class MainActivity : ComponentActivity() {
                         onDismiss = {
                             startDialogVisible.value = false
                         },
-                        nameOfItem = nameOfItem.value
+                        nameOfItem = nameOfItem.value,
+                    this
                     )
                 }
             }

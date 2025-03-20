@@ -1,5 +1,6 @@
 package com.napnap.testoapp.ui.screens.main
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +30,8 @@ import androidx.compose.ui.window.DialogProperties
 @Composable
 fun StartDialog(
     onDismiss:()->Unit,
-    nameOfItem: String
+    nameOfItem: String,
+    context: Context
 ){
     Dialog(
         onDismissRequest = onDismiss,
@@ -59,11 +61,13 @@ fun StartDialog(
                         .fillMaxWidth()
                         .padding(vertical = 10.dp),
                 ) {
-                    val context = LocalContext.current.applicationContext
                     Button(
                         modifier = Modifier
                             .weight(1f),
-                        onClick = { startQuiz(nameOfItem,context,false) },
+                        onClick = {
+                            startQuiz(nameOfItem,context,false)
+                            onDismiss()
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.background
                         )
@@ -91,7 +95,10 @@ fun StartDialog(
                     Button(
                         modifier = Modifier
                             .weight(1f),
-                        onClick = { startQuiz(nameOfItem,context,false) },
+                        onClick = {
+                            startQuiz(nameOfItem,context,false)
+                            onDismiss()
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.background
                         )
