@@ -14,6 +14,9 @@ class QuizActivity : ComponentActivity() {
         setContent {
             val settingsStore = SettingsStore()
             TestoAppTheme(settingsStore) {
+                //TODO - Przekopiować ustawienia z MainActivity
+                //TODO - Pobrać dane z intenta
+                //TODO - Jeżeli continueQuiz = false przy ładowaniu z jsona zamień wszystkie wykonania na x
 
             }
         }

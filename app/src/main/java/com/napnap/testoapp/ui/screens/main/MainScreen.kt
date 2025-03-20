@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,9 +57,10 @@ import java.io.File
 
 @Composable
 fun MainScreen(values: PaddingValues,
-                loadDialogVisible:MutableState<Boolean>,
                 startDialogVisible: MutableState<Boolean>,
-                nameOfItem: MutableState<String>){
+                nameOfItem: MutableState<String>,
+                getUri: ActivityResultLauncher<String>
+){
     val visible = remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
@@ -74,7 +76,7 @@ fun MainScreen(values: PaddingValues,
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             ContinueButton()
-            LoadButton(loadDialogVisible)
+            LoadButton(getUri)
             HistoryButton(visible)
             if(visible.value){
                 Box(
@@ -133,13 +135,15 @@ fun continueQuiz(localContext:Context){
 }
 
 @Composable
-fun LoadButton(loadDialogVisible:MutableState<Boolean>){
+fun LoadButton(getUri:ActivityResultLauncher<String>){
     Button(
         modifier = Modifier
             .fillMaxWidth()
             .size(60.dp)
             .padding(vertical = 0.dp),
-        onClick = { loadDialogVisible.value = true },
+        onClick = {
+            getUri.launch("application/zip")
+ },
         shape = RoundedCornerShape(0.dp)
     ) {
         Text("Wczytaj",

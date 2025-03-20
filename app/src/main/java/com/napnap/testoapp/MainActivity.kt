@@ -42,18 +42,24 @@ import com.napnap.testoapp.data.classes.SettingsString
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.screens.info.InfoScreen
-import com.napnap.testoapp.ui.screens.main.LoadDialog
 import com.napnap.testoapp.ui.screens.main.MainScreen
 import com.napnap.testoapp.ui.screens.main.StartDialog
 import com.napnap.testoapp.ui.screens.main.handleZipFile
 import com.napnap.testoapp.ui.screens.settings.SettingsScreen
 import com.napnap.testoapp.ui.theme.TestoAppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity : ComponentActivity() {
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { handleZipFile(it,applicationContext) }
+        uri?.let {
+            CoroutineScope(Dispatchers.Main).launch {
+                handleZipFile(it, applicationContext)
+            }
+        }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +67,6 @@ class MainActivity : ComponentActivity() {
             val settingsStore = SettingsStore()
             TestoAppTheme(settingsStore) {
                 val context = LocalContext.current.applicationContext
-                val loadDialogVisible = remember { mutableStateOf(false) }
                 val startDialogVisible = remember { mutableStateOf(false) }
                 val nameOfItem = remember { mutableStateOf("") }
                 createBaseDir(context, baseDirName)
@@ -128,7 +133,7 @@ class MainActivity : ComponentActivity() {
                         }
                     ) {values -> NavHost(navController = navController, startDestination = Main, builder = {
                             composable(Main){
-                                MainScreen(values,loadDialogVisible,startDialogVisible,nameOfItem)
+                                MainScreen(values,startDialogVisible,nameOfItem,getContent)
                             }
                             composable(Settings){
                                 SettingsScreen(values,settingsStore)
@@ -139,14 +144,6 @@ class MainActivity : ComponentActivity() {
                         })
                     }
 
-                }
-                if(loadDialogVisible.value){
-                    LoadDialog(
-                        onDismiss = {
-                            loadDialogVisible.value = false
-                        },
-                        getUri = getContent
-                    )
                 }
                 if(startDialogVisible.value){
                     StartDialog(
