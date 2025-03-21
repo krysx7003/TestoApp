@@ -54,7 +54,6 @@ class QuizActivity : ComponentActivity() {
             val dirName = intent.extras?.getString(dirNameExtra)
             val continueQuiz = intent.extras?.getBoolean(continueExtra) ?: true
 
-            //TODO - Jeżeli continueQuiz = false przy ładowaniu z jsona zamień wszystkie wykonania na x
             TestoAppTheme(settingsStore) {
                 val localContext = LocalContext.current
                 val navController = rememberNavController()
@@ -62,9 +61,12 @@ class QuizActivity : ComponentActivity() {
                     .map { it.destination.route }
                     .collectAsState(initial = Quiz)
                 var header by remember { mutableStateOf(QuizString) }
-                val viewModel = QuizViewModel(localContext,continueQuiz)
+                val viewModel = QuizViewModel(localContext,continueQuiz,dirName.toString())
+
                 val questionList = viewModel.questionList.collectAsState()
                 val completion = viewModel.completion.collectAsState()
+                val timer = viewModel.timer.collectAsState()
+
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -139,4 +141,10 @@ class QuizActivity : ComponentActivity() {
             }
         }
     }
+}
+fun Long.formatTime(): String {
+    val hours = this / 3600
+    val minutes = (this % 3600) / 60
+    val remainingSeconds = this % 60
+    return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)
 }

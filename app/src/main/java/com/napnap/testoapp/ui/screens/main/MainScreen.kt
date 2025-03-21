@@ -57,6 +57,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
+//FIXME - BAD HACK użyj Card
 @Composable
 fun MainScreen(values: PaddingValues,
                 startDialogVisible: MutableState<Boolean>,

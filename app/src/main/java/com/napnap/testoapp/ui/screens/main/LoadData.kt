@@ -52,7 +52,7 @@ suspend fun handleZipFile(uri: Uri, context: Context){
                             }else{
                                 file.mkdirs()
                             }
-                            zipName = entry.name
+                            zipName = entry.name.removeSuffix("/")
                             File(file,saveJson).createNewFile()
                         } else {
                             file.outputStream().use { fileOutput ->
@@ -67,7 +67,7 @@ suspend fun handleZipFile(uri: Uri, context: Context){
                 zipInputStream.close()
                 Log.i("HandlingZip", "Unzipped successfully to ${outputDir.absolutePath}")
                 writeJson(context, zipName, questionFileList)
-                appendJson(context,zipName)
+                appendJson(context,zipName,QuizData(zipName,0.0,"0:00", LocalDateTime.now().toString()))
             } ?: Log.e("HandlingZip", "Failed to open input stream")
 
         } catch (e: Exception) {
@@ -80,6 +80,7 @@ suspend fun handleZipFile(uri: Uri, context: Context){
 fun writeJson(context: Context,zipName: String,questionFileList: MutableList<QuestionFile> ){
     val questionJson = Gson().toJson(questionFileList)
     val jsonFileQ = context.filesDir.resolve("$baseDirName/$zipName/$saveJson")
+    Log.i("WriteJson","Written $questionJson to file $zipName/$saveJson")
     jsonFileQ.writeText(questionJson)
 }
 
@@ -87,13 +88,13 @@ fun isJsonArr(string: String):Boolean{
     return !string.startsWith("[") && !string.endsWith("]")
 }
 
-fun appendJson(context: Context, zipName:String){
+fun appendJson(context: Context, zipName:String,quizData: QuizData){
     val jsonFileH = context.filesDir.resolve("$baseDirName/$histJson")
     if(jsonFileH.exists()){
         val jsonString = jsonFileH.bufferedReader().use{ it.readText() }
         if(jsonString.isNotEmpty()) {
             val data: MutableList<QuizData> = Gson().fromJson(jsonString, object : TypeToken<MutableList<QuizData>>() {}.type)
-            data.add(QuizData(zipName,0.0,"0:00", LocalDateTime.now().toString()))
+            data.add(quizData)
             var historyJson  = Gson().toJson(data)
             if(data.size==1 && isJsonArr(historyJson) ){
                 historyJson = "[$historyJson]"
@@ -115,7 +116,7 @@ fun findAndDelete(context: Context,dir: File){
         val jsonString = jsonFile.bufferedReader().use{ it.readText() }
         if(jsonString.isNotEmpty()) {
             val data: MutableList<QuizData> = Gson().fromJson(jsonString, object : TypeToken<MutableList<QuizData>>() {}.type)
-            val updatedList = data.filter { it.name != dir.name+"/" }
+            val updatedList = data.filter { it.name != dir.name }
             jsonFile.writeText(Gson().toJson(updatedList))
         }
     }
