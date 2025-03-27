@@ -67,7 +67,7 @@ suspend fun handleZipFile(uri: Uri, context: Context){
                 zipInputStream.close()
                 Log.i("HandlingZip", "Unzipped successfully to ${outputDir.absolutePath}")
                 writeJson(context, zipName, questionFileList)
-                appendJson(context,zipName,QuizData(zipName,0.0,"0:00", LocalDateTime.now().toString()))
+                appendJson(context,zipName,QuizData(zipName,0.0F,"0:00", LocalDateTime.now().toString()))
             } ?: Log.e("HandlingZip", "Failed to open input stream")
 
         } catch (e: Exception) {
@@ -101,7 +101,7 @@ fun appendJson(context: Context, zipName:String,quizData: QuizData){
             }
             jsonFileH.writeText(historyJson)
         }else{
-            var historyJson  = Gson().toJson(QuizData(zipName,0.0,"0:00", LocalDateTime.now().toString()))
+            var historyJson  = Gson().toJson(QuizData(zipName,0.0F,"0:00", LocalDateTime.now().toString()))
             if(isJsonArr(historyJson)){
                 historyJson = "[$historyJson]"
             }

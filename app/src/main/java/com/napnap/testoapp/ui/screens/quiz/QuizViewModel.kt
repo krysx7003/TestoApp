@@ -9,11 +9,14 @@ import com.google.gson.reflect.TypeToken
 import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.QuizData
 import com.napnap.testoapp.data.classes.baseDirName
+import com.napnap.testoapp.data.classes.histJson
 import com.napnap.testoapp.data.classes.saveJson
 import com.napnap.testoapp.data.stores.SettingsStore
-import com.napnap.testoapp.formatTime
+import com.napnap.testoapp.fromTime
+import com.napnap.testoapp.toTime
 import com.napnap.testoapp.ui.screens.main.appendJson
 import com.napnap.testoapp.ui.screens.main.findAndDelete
+import com.napnap.testoapp.ui.screens.main.writeJson
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +30,13 @@ class QuizViewModel(context: Context,continueQuiz:Boolean,dirName: String) : Vie
     private val _questionList = MutableStateFlow<List<QuestionFile>>(emptyList())
     val questionList = _questionList.asStateFlow()
 
-    private val _completion = MutableStateFlow(0.0)
+    private val _completedQuestions = MutableStateFlow(1.0)
+    val completedQuestions = _completedQuestions
+
+    private val _allQuestions = MutableStateFlow(1.0)
+    val allQuestions = _allQuestions
+
+    private val _completion = MutableStateFlow((_allQuestions.value/_completedQuestions.value).toFloat())
     val completion = _completion
 
     private val _timer = MutableStateFlow(0L)
@@ -36,6 +45,9 @@ class QuizViewModel(context: Context,continueQuiz:Boolean,dirName: String) : Vie
     private var timerJob: Job? = null
     init {
         viewModelScope.launch {
+            if(continueQuiz){
+                loadTime(context, dirName)
+            }
             timerJob?.cancel()
             timerJob = viewModelScope.launch {
                 while (true){
@@ -52,12 +64,29 @@ class QuizViewModel(context: Context,continueQuiz:Boolean,dirName: String) : Vie
                 )
                 findAndDelete(context, File(context.filesDir,"$baseDirName/$dirName"))
                 appendJson(context,dirName,
-                    QuizData(dirName,completion.value,timer.value.formatTime(),
+                    QuizData(dirName,completion.value,timer.value.toTime(),
                         LocalDateTime.now().toString())
                 )
             }
         }
     }
+
+    private fun loadTime(context: Context,dirName: String) {
+        val jsonFile = context.filesDir.resolve("$baseDirName/$dirName/$histJson")
+        if(jsonFile.exists()) {
+            val jsonString = jsonFile.bufferedReader().use { it.readText() }
+            if (jsonString.isNotEmpty()) {
+                val data : List<QuizData> = Gson().fromJson(jsonString, object : TypeToken<List<QuizData>>() {}.type)
+                for(quiz in data){
+                  if(quiz.name == dirName){
+                      _timer.value = quiz.time.fromTime()
+                      break
+                  }
+                }
+            }
+        }
+    }
+
     private suspend fun loadData(context: Context,continueQuiz: Boolean,dirName:String){
         val settingsStore = SettingsStore()
         val startAmount = settingsStore.read("startAmount",context).first().toString().toIntOrNull() ?: 2
@@ -69,7 +98,7 @@ class QuizViewModel(context: Context,continueQuiz:Boolean,dirName: String) : Vie
                 if(!continueQuiz){
                     data = reinitJson(data,startAmount)
                 }
-                _questionList.value = data
+                _questionList.value = data.shuffled()
                 calculateCompletion(data)
                 Log.i("LoadHistory","Loaded file $baseDirName/$dirName/$saveJson with ${_questionList.value.size}")
             }else{
@@ -84,6 +113,7 @@ class QuizViewModel(context: Context,continueQuiz:Boolean,dirName: String) : Vie
         super.onCleared()
         timerJob?.cancel()
         //TODO - Zapisz do save.json
+        //TODO - Zapisz do hist.json
     }
 
     private fun reinitJson(data: List<QuestionFile>,startAmount:Int):List<QuestionFile>{
@@ -91,11 +121,6 @@ class QuizViewModel(context: Context,continueQuiz:Boolean,dirName: String) : Vie
         return data.map { it.copy(repeat = startAmount) }
     }
 
-    private fun writeJson(context: Context, zipName: String, questionFileList: List<QuestionFile> ){
-        val questionJson = Gson().toJson(questionFileList)
-        val jsonFileQ = context.filesDir.resolve("$baseDirName/$zipName/$saveJson")
-        jsonFileQ.writeText(questionJson)
-    }
     private fun calculateCompletion(data:List<QuestionFile>){
         var completedCount = 0
         var allCount = 0
@@ -105,7 +130,8 @@ class QuizViewModel(context: Context,continueQuiz:Boolean,dirName: String) : Vie
             }
             allCount++
         }
-        _completion.value = (completedCount/allCount).toDouble()
+        _completedQuestions.value = (completedCount).toDouble()
+        _allQuestions.value = (allCount).toDouble()
         Log.i("CalcComp","There are $allCount questions and $completedCount of them are completed giving completion rate of $completion")
     }
 }

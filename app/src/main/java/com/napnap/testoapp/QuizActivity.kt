@@ -43,6 +43,7 @@ import com.napnap.testoapp.ui.screens.quiz.QuizViewModel
 import com.napnap.testoapp.ui.screens.settings.SettingsScreen
 import com.napnap.testoapp.ui.theme.TestoAppTheme
 import kotlinx.coroutines.flow.map
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 class QuizActivity : ComponentActivity() {
@@ -64,9 +65,6 @@ class QuizActivity : ComponentActivity() {
                 val viewModel = QuizViewModel(localContext,continueQuiz,dirName.toString())
 
                 val questionList = viewModel.questionList.collectAsState()
-                val completion = viewModel.completion.collectAsState()
-                val timer = viewModel.timer.collectAsState()
-
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -126,7 +124,9 @@ class QuizActivity : ComponentActivity() {
                         }
                     ) {values -> NavHost(navController = navController, startDestination = Quiz, builder = {
                         composable(Quiz){
-                            QuizScreen(values)
+                            if(questionList.value.isNotEmpty()){
+                                QuizScreen(values,dirName.toString(),viewModel, questionList.value[1])
+                            }
                         }
                         composable(Settings){
                             SettingsScreen(values,settingsStore)
@@ -142,9 +142,19 @@ class QuizActivity : ComponentActivity() {
         }
     }
 }
-fun Long.formatTime(): String {
+fun Long.toTime(): String {
     val hours = this / 3600
     val minutes = (this % 3600) / 60
     val remainingSeconds = this % 60
-    return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds)
+    return String.format(Locale.GERMANY,"%02d:%02d:%02d", hours, minutes, remainingSeconds)
+}
+
+fun String.fromTime():Long{
+    val timeParts = this.split(":")
+
+    val hours = timeParts[0].toInt()
+    val minutes = timeParts[1].toInt()
+    val seconds = timeParts[2].toInt()
+
+    return (hours * 3600 + minutes * 60 + seconds).toLong()
 }
