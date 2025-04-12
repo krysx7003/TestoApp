@@ -3,12 +3,14 @@
 package com.napnap.testoapp.ui.screens.quiz
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,16 +25,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.napnap.testoapp.data.classes.Answer
 import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.toTime
 import com.napnap.testoapp.ui.theme.Green
-import com.napnap.testoapp.ui.theme.Red
 import java.io.File
 
 @Composable
@@ -43,10 +46,8 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel,que
     val timer = viewModel.timer.collectAsState()
 
     val context = LocalContext.current
-    //TODO - Do viewModelu??
     val question = loadQuestion(context,dirName,questionFile.name)
 
-    //TODO - Poprawić polskie znaki
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -67,14 +68,31 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel,que
                     .fillMaxWidth()
                     .padding(15.dp)
             ) {
-                Text(question.text,fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+                if(question.text.startsWith("[img]") && question.text.endsWith("[/img]")){
+                    val imageName = question.text.removePrefix("[img]").removeSuffix("[/img]")
+                    val file = File(context.filesDir,"$baseDirName/$dirName/$imageName")
+                    if(file.exists()){
+                        AsyncImage(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp),
+                            model = file,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit
+                        )
+                    }else{
+                        Log.w("Image","Image ${file.path} not exists")
+                    }
+                }else{
+                    Text(question.text,fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+                }
                 Row(
                     modifier =  Modifier
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom
                 ){
-                    Text(completedQuestion.value.toInt().toString(),fontSize = 20.sp, color = Red)
+                    Text(completedQuestion.value.toInt().toString(),fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
 
                     Text(timer.value.toTime(),fontSize = 30.sp, color = MaterialTheme.colorScheme.onPrimary)
 

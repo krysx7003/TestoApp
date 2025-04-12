@@ -57,9 +57,14 @@ suspend fun handleZipFile(uri: Uri, context: Context){
                         } else {
                             file.outputStream().use { fileOutput ->
                                 if (!file.name.endsWith(".json")){
-                                    questionFileList.add(QuestionFile(file.name,startAmount))
-                                    zipInputStream.copyTo(fileOutput)
-                                }else{}
+                                    if(file.name.endsWith(".txt")){
+                                        questionFileList.add(QuestionFile(file.name,startAmount))
+                                    }
+                                    val bytes = zipInputStream.readBytes()
+                                    fileOutput.write(bytes)
+                                }else{
+                                    Log.w("HandlingZip","File named ${file.name} not saved")
+                                }
                             }
                         }
                     }

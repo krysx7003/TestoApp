@@ -10,3 +10,6 @@
 - [ x ] Całkowita ilość pytań
 - [ x ] Stosunek poprawnych odpowiedzi do złych
 - [ ] Licznik zaliczonych pytań
+
+## Uwagi
+Trzeba pilnować kodowania
