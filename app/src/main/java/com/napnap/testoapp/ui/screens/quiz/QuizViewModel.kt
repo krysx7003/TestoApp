@@ -7,6 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.napnap.testoapp.data.classes.Answer
+import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.QuizData
 import com.napnap.testoapp.data.classes.baseDirName
@@ -43,8 +45,12 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
     private val _timer = MutableStateFlow(0L)
     val timer = _timer.asStateFlow()
 
+    private var _question = MutableStateFlow<Question?>(null)
+    val question = _question
+
     private var timerJob: Job? = null
     private val globalDirName: String = dirName
+
     init {
         val context = getApplication<Application>()
         viewModelScope.launch {
@@ -74,6 +80,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
                 for(quiz in data){
                   if(quiz.name == globalDirName){
                       _timer.value = quiz.time.fromTime()
+                      Log.i("LoadTime","Time in Quiz $globalDirName is ${timer.value.toTime()}")
                       break
                   }
                 }
@@ -133,10 +140,29 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
             QuizData(globalDirName,completion.value,timer.value.toTime(),
                 LocalDateTime.now().toString())
         )
+        Log.i("UpdatedState","State of Quiz $globalDirName")
     }
     fun cleanup(){
         timerJob?.cancel()
         updateSavedState()
     }
 
+    fun loadQuestion(context: Context,dirName: String,fileName: String){
+        Log.i("QuizViewModel","Loading Question $fileName")
+        val lineList = ArrayList<String>()
+        File(context.filesDir,"$baseDirName/$dirName/$fileName").useLines { lines -> lines.forEach { lineList.add(it) }}
+        val correctAnswer = lineList[0].removePrefix("X").toList()
+        lineList.removeAt(0)
+        val questionText = lineList[0].trim()
+        lineList.removeAt(0)
+        val answerList = ArrayList<Answer>()
+        Log.i("QuizViewModel","Question has ${lineList.size} answers")
+        for(i in lineList.indices){
+            if(correctAnswer.size > i){
+                val isCorrect = correctAnswer[i] == '1'
+                answerList.add(Answer(isCorrect,lineList[i]))
+            }
+        }
+        _question.value = Question(questionText,answerList.shuffled())
+    }
 }

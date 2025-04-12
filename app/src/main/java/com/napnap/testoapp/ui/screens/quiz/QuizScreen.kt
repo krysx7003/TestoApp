@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.napnap.testoapp.data.classes.Answer
 import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.baseDirName
@@ -46,7 +45,10 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel,que
     val timer = viewModel.timer.collectAsState()
 
     val context = LocalContext.current
-    val question = loadQuestion(context,dirName,questionFile.name)
+
+    viewModel.loadQuestion(context,dirName,questionFile.name)
+    val question = viewModel.question.collectAsState()
+
 
     Column(
         modifier = Modifier
@@ -68,61 +70,35 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel,que
                     .fillMaxWidth()
                     .padding(15.dp)
             ) {
-                if(question.text.startsWith("[img]") && question.text.endsWith("[/img]")){
-                    val imageName = question.text.removePrefix("[img]").removeSuffix("[/img]")
-                    val file = File(context.filesDir,"$baseDirName/$dirName/$imageName")
-                    if(file.exists()){
-                        AsyncImage(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp),
-                            model = file,
-                            contentDescription = null,
-                            contentScale = ContentScale.Fit
-                        )
-                    }else{
-                        Log.w("Image","Image ${file.path} not exists")
-                    }
+                if(question.value?.text?.isNotBlank()!! && allQuestions.value != 1.0){
+                    FullHeader(
+                        context, question.value!!, dirName,
+                        completedQuestion.value, timer.value,
+                        allQuestions.value, completion.value
+                    )
                 }else{
-                    Text(question.text,fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+                    InProgressHeader()
                 }
-                Row(
-                    modifier =  Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ){
-                    Text(completedQuestion.value.toInt().toString(),fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
-
-                    Text(timer.value.toTime(),fontSize = 30.sp, color = MaterialTheme.colorScheme.onPrimary)
-
-                    Text(allQuestions.value.toInt().toString(),fontSize = 20.sp, color = Green)
-                }
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    progress = completion.value,
-                    color = Green,
-                    trackColor = MaterialTheme.colorScheme.onPrimary
-                )
             }
         }
 
         LazyColumn {
-            items(question.answers){
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    shape = RoundedCornerShape(15.dp),
-                    colors =  CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                    ),
-                    onClick = {
-                        //TODO - Zmiana koloru krawędzi
+            question.value?.let {
+                items(it.answers){
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        shape = RoundedCornerShape(15.dp),
+                        colors =  CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                        ),
+                        onClick = {
+                            //TODO - Zmiana koloru krawędzi
+                        }
+                    ) {
+                        Text(it.text, modifier = Modifier.padding(15.dp),fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
                     }
-                ) {
-                    Text(it.text, modifier = Modifier.padding(15.dp),fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -130,17 +106,67 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel,que
 
 }
 
-fun loadQuestion(context: Context,dirName: String,fileName: String): Question {
-    val lineList = ArrayList<String>()
-    File(context.filesDir,"$baseDirName/$dirName/$fileName").useLines { lines -> lines.forEach { lineList.add(it) }}
-    val correctAnswer = lineList[0].removePrefix("X").toList()
-    lineList.removeAt(0)
-    val questionText = lineList[0]
-    lineList.removeAt(0)
-    val answerList = ArrayList<Answer>()
-    for(i in lineList.indices){
-        val isCorrect = correctAnswer[i] == '1'
-        answerList.add(Answer(isCorrect,lineList[i]))
+@Composable
+fun FullHeader(context: Context, question: Question, dirName: String, completedQuestion: Double, timer: Long, allQuestions: Double, completion:Float){
+    if(question.text.startsWith("[img]") && question.text.endsWith("[/img]")){
+        val imageName = question.text.removePrefix("[img]").removeSuffix("[/img]")
+        val file = File(context.filesDir,"$baseDirName/$dirName/$imageName")
+        if(file.exists()){
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp),
+                model = file,
+                contentDescription = null,
+                contentScale = ContentScale.Fit
+            )
+        }else{
+            Log.w("Image","Image ${file.path} not exists")
+        }
+    }else{
+        Text(question.text,fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
     }
-    return Question(questionText,answerList.shuffled())
+    Row(
+        modifier =  Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom
+    ){
+        Text(completedQuestion.toInt().toString(),fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+
+        Text(timer.toTime(),fontSize = 30.sp, color = MaterialTheme.colorScheme.onPrimary)
+
+        Text(allQuestions.toInt().toString(),fontSize = 20.sp, color = Green)
+    }
+    LinearProgressIndicator(
+        modifier = Modifier
+            .fillMaxWidth(),
+        progress = completion,
+        color = Green,
+        trackColor = MaterialTheme.colorScheme.onPrimary
+    )
+}
+
+@Composable
+fun InProgressHeader(){
+    Text(" ",fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+    Row(
+        modifier =  Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom
+    ){
+        Text("--",fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+
+        Text("--:--:--",fontSize = 30.sp, color = MaterialTheme.colorScheme.onPrimary)
+
+        Text("--",fontSize = 20.sp, color = Green)
+    }
+    LinearProgressIndicator(
+        modifier = Modifier
+            .fillMaxWidth(),
+        progress = 0f,
+        color = Green,
+        trackColor = MaterialTheme.colorScheme.onPrimary
+    )
 }
