@@ -149,9 +149,7 @@ class QuizActivity : ComponentActivity() {
         }
     }
 }
-//TODO - Przycisk next
-//TODO - Dec obecny quiz
-//TODO - Inc obecny quiz
+
 fun Long.toTime(): String {
     val hours = this / 3600
     val minutes = (this % 3600) / 60

@@ -33,13 +33,13 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
     private val _questionList = MutableStateFlow<List<QuestionFile>>(emptyList())
     val questionList = _questionList.asStateFlow()
 
-    private val _completedQuestions = MutableStateFlow(1.0)
+    private val _completedQuestions = MutableStateFlow(0.0)
     val completedQuestions = _completedQuestions
 
     private val _allQuestions = MutableStateFlow(1.0)
     val allQuestions = _allQuestions
 
-    private val _completion = MutableStateFlow((_allQuestions.value/_completedQuestions.value).toFloat())
+    private val _completion = MutableStateFlow(0.0f)
     val completion = _completion
 
     private val _timer = MutableStateFlow(0L)
@@ -51,9 +51,17 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
     private var timerJob: Job? = null
     private val globalDirName: String = dirName
 
+    private var repeatAmount: Int = 1
+    private var startAmount: Int = 2
+    private var maxAmount: Int = 10
+
     init {
         val context = getApplication<Application>()
         viewModelScope.launch {
+            val settingsStore = SettingsStore()
+            repeatAmount = settingsStore.read("repeatAmount",context).first().toString().toIntOrNull() ?: 1
+            startAmount = settingsStore.read("startAmount",context).first().toString().toIntOrNull() ?: 2
+            maxAmount = settingsStore.read("maxAmount",context).first().toString().toIntOrNull() ?: 10
             if(continueQuiz){
                 loadTime(context)
             }
@@ -88,9 +96,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         }
     }
 
-    private suspend fun loadData(context: Context,continueQuiz: Boolean){
-        val settingsStore = SettingsStore()
-        val startAmount = settingsStore.read("startAmount",context).first().toString().toIntOrNull() ?: 2
+    private fun loadData(context: Context,continueQuiz: Boolean){
         val jsonFile = context.filesDir.resolve("$baseDirName/$globalDirName/$saveJson")
         if(jsonFile.exists()){
             val jsonString = jsonFile.bufferedReader().use{ it.readText() }
@@ -126,6 +132,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         }
         _completedQuestions.value = (completedCount).toDouble()
         _allQuestions.value = (allCount).toDouble()
+        updateCompletion()
         Log.i("CalcComp","There are $allCount questions and $completedCount of them are completed giving completion rate of $completion")
     }
     private fun updateSavedState(){
@@ -164,5 +171,47 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
             }
         }
         _question.value = Question(questionText,answerList.shuffled())
+    }
+
+    fun updateCompletion(){
+        if(_completedQuestions.value == 0.0){
+            _completion.value = 0.0f
+        }else{
+            _completion.value = (_completedQuestions.value/_allQuestions.value).toFloat()
+        }
+    }
+
+    fun updateCompletedQuestions(value: Double){
+        _completedQuestions.value += value
+        updateCompletion()
+    }
+
+    fun incQuestion(name: String){
+        _questionList.value = _questionList.value.map { questionFile ->
+            if (questionFile.name == name) {
+                var repeatAmount = questionFile.repeat + repeatAmount
+                if(repeatAmount>maxAmount){
+                    repeatAmount = maxAmount
+                }
+                questionFile.copy(repeat = repeatAmount )
+            } else {
+                questionFile
+            }
+        }
+    }
+
+    fun decQuestion(name: String){
+        _questionList.value = _questionList.value.mapNotNull { questionFile ->
+            if (questionFile.name == name) {
+                val repeatAmount = questionFile.repeat - 1
+                if (repeatAmount > 0) {
+                    questionFile.copy(repeat = repeatAmount)
+                } else {
+                    null
+                }
+            } else {
+                questionFile
+            }
+        }
     }
 }
