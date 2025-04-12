@@ -1,5 +1,6 @@
 package com.napnap.testoapp
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,16 +55,16 @@ class QuizActivity : ComponentActivity() {
         setContent {
             val settingsStore = SettingsStore()
             val dirName = intent.extras?.getString(dirNameExtra)
-            val continueQuiz = intent.extras?.getBoolean(continueExtra) ?: true
+            val continueQuiz = intent.extras?.getBoolean(continueExtra) != false
 
             TestoAppTheme(settingsStore) {
-                val localContext = LocalContext.current
+                val application = LocalContext.current.applicationContext as Application
                 val navController = rememberNavController()
                 val currentRoute by navController.currentBackStackEntryFlow
                     .map { it.destination.route }
                     .collectAsState(initial = Quiz)
                 var header by remember { mutableStateOf(QuizString) }
-                val viewModel = QuizViewModel(localContext,continueQuiz,dirName.toString())
+                val viewModel = QuizViewModel(application,continueQuiz,dirName.toString())
 
                 val questionList = viewModel.questionList.collectAsState()
 
@@ -137,6 +139,11 @@ class QuizActivity : ComponentActivity() {
                     })
                     }
 
+                }
+                DisposableEffect(Unit) {
+                    onDispose {
+                        viewModel.cleanup()
+                    }
                 }
             }
         }
