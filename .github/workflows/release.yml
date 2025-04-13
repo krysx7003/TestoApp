@@ -20,7 +20,7 @@ jobs:
         run: ./gradlew lintDebug
 
       - name: Upload html test report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: lint-report
           path: app/build/reports/lint-results-debug.html
@@ -38,7 +38,7 @@ jobs:
         run: ./gradlew detekt
 
       - name: Upload Detekt report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: detekt-report
           path: app/build/reports/detekt/detekt.xml
@@ -57,7 +57,7 @@ jobs:
         run: ./gradlew test
       
       - name: Upload html test report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: unit-test-report
           path: app/build/reports/testDebugUnitTest/
@@ -79,7 +79,7 @@ jobs:
             script: ./gradlew connectedCheck
       
         - name: Upload html test report
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v4
           with:
             name: instrumentation-test-report
             path: app/build/reports/androidTests/connected/
