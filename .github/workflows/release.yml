@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      
+      - name: Grant execute permission
+        run: chmod +x ./gradlew
+
+      - name: Run Lint
+        run: ./gradlew lintDebug
+
+      - name: Upload html test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+  
+  static-code-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      
+      - name: Grant execute permission
+        run: chmod +x ./gradlew
+        
+      - name: Run Detekt (Kotlin Static Code Analysis)
+        run: ./gradlew detekt
+
+      - name: Upload Detekt report
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-report
+          path: app/build/reports/detekt/detekt.xml
+  
+  unit-test:
+    needs: [lint,static-code-analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      
+      - name: Grant execute permission
+        run: chmod +x ./gradlew
+
+      - name: Run tests
+        run: ./gradlew test
+      
+      - name: Upload html test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-report
+          path: app/build/reports/testDebugUnitTest/
+
+  instrumentation-test:
+      needs: [unit-test]
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout the code
+          uses: actions/checkout@v4
+        
+        - name: Grant execute permission
+          run: chmod +x ./gradlew
+
+        - name: Run esspresso tests
+          uses: reactivecircus/android-emulator-runner@v2
+          with:
+            api-level: 34
+            script: ./gradlew connectedCheck
+      
+        - name: Upload html test report
+          uses: actions/upload-artifact@v4
+          with:
+            name: instrumentation-test-report
+            path: app/build/reports/androidTests/connected/
+      
