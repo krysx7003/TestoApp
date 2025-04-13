@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -49,6 +52,8 @@ import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.toTime
 import com.napnap.testoapp.ui.theme.Green
+import com.napnap.testoapp.ui.theme.Red
+import com.napnap.testoapp.ui.theme.SoftYellow
 import com.napnap.testoapp.ui.theme.White
 import java.io.File
 
@@ -68,13 +73,14 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel){
 
     val answered = remember { mutableStateOf(false) }
     val answerChosen = remember { mutableStateOf<List<Boolean>>(emptyList()) }
-    LaunchedEffect(question.value?.answers?.size) {
+    val answerColor = remember { mutableStateOf<List<Color>>(emptyList()) }
+    val primaryColor = MaterialTheme.colorScheme.primary
+
+    LaunchedEffect(question.value) {
         val size = question.value?.answers?.size ?: 0
         answerChosen.value = List(size) { false }
-    }
-    LaunchedEffect(question.value) {
+        answerColor.value = List(size){ primaryColor }
         answered.value = false
-        answerChosen.value = List(question.value?.answers?.size ?: 0) { false }
     }
     Column(
         modifier = Modifier
@@ -113,22 +119,85 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel){
             ){
                 question.value?.let {
                     itemsIndexed(it.answers) {index,answer ->
+                        val isChosen = answerChosen.value.getOrNull(index) == true
+                        val cardColor = answerColor.value.getOrNull(index) ?: primaryColor
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp),
                             shape = RoundedCornerShape(15.dp),
                             colors =  CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
+                                containerColor = cardColor,
                             ),
                             onClick = {
-                                val currList = answerChosen.value.toMutableList()
-                                currList[index] = !currList[index]
-                                answerChosen.value = currList
+                                if(!answered.value){
+                                    val currList = answerChosen.value.toMutableList()
+                                    if(index < currList.size){
+                                        currList[index] = !currList[index]
+                                        answerChosen.value = currList
+                                    }
+                                }
                             }
                         ) {
-                            //TODO - Zmiana koloru krawędzi
-                            Text(answer.text, modifier = Modifier.padding(15.dp),fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+                            Row{
+                                Text(answer.text, modifier = Modifier.padding(15.dp).weight(1.2f),fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+                                if(answered.value){
+                                    val currColorList = answerColor.value.toMutableList()
+                                    when {
+                                        isChosen && answer.correct -> {
+                                            currColorList[index] = Green
+                                            Icon(
+                                                imageVector = Icons.Filled.Check,
+                                                contentDescription = "",
+                                                tint = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier
+                                                    .align(Alignment.CenterVertically)
+                                                    .weight(1f)
+                                                    .size(30.dp)
+                                            )
+                                            Log.i("Answer", "Answer $index answered correctly")
+                                        }
+                                        !isChosen && answer.correct -> {
+                                            currColorList[index] = SoftYellow
+                                            Icon(
+                                                imageVector = questionMark,
+                                                contentDescription = "",
+                                                tint = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier
+                                                    .align(Alignment.CenterVertically)
+                                                    .weight(1f)
+                                                    .size(30.dp)
+                                            )
+                                            Log.i("Answer", "Answer $index not answered")
+                                        }
+                                         isChosen && !answer.correct -> {
+                                            currColorList[index] = Red
+                                            Icon(
+                                                imageVector = Icons.Filled.Close,
+                                                contentDescription = "",
+                                                tint = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier
+                                                    .align(Alignment.CenterVertically)
+                                                    .weight(1f)
+                                                    .size(30.dp)
+                                            )
+                                            Log.i("Answer", "Answer $index answered incorrectly")
+                                        }
+                                    }
+                                    answerColor.value = currColorList
+                                }else if(isChosen){
+                                    Icon(
+                                        imageVector = questionMark,
+                                        contentDescription = "",
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterVertically)
+                                            .weight(1f)
+                                            .size(30.dp)
+                                    )
+                                }
+                            }
+
                         }
                         if(answer == question.value?.answers?.last()){
                             Spacer(modifier = Modifier.padding(bottom = 70.dp))
