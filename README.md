@@ -1,4 +1,7 @@
 # Testownik PWR 
+
+## Podstawowe
+
 - [x] Wczytywanie plików z .zip
 - [x] Parsowanie pliów .txt na pytania
 - [x] Obrazy w tekście pytania lub odpowiedziach
@@ -11,6 +14,15 @@
 - [x] Stosunek poprawnych odpowiedzi do złych
 - [x] Licznik zaliczonych pytań
 
+## Dodatkowe
+
+- [] Testy jednostkowe
+- [] Testy androidowe??
+- [] Rozdzielić UI od backendu
+- [x] CI/CD
+- [] Ewentualne poprawki UI
+- [] Content description dla ikon i obrazów 
 
 ## Uwagi
+
 Trzeba pilnować kodowania

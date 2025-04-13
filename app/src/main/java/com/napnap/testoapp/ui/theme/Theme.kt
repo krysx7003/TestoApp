@@ -19,7 +19,6 @@ import androidx.core.view.WindowCompat
 import com.napnap.testoapp.data.stores.SettingsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 private val DarkColorScheme = darkColorScheme(
@@ -53,20 +52,14 @@ fun TestoAppTheme(
     val context = LocalContext.current
     val isDarkMode = isSystemInDarkTheme()
 
-    val lightState = settingsStore.read("light",context).map { it == "true" }.collectAsState(initial = null)
-    val classicState = settingsStore.read("classic",context).map { it == "true" }.collectAsState(initial = null)
-    val darkState = settingsStore.read("dark",context).map { it == "true" }.collectAsState(initial = null)
-
-    var light = lightState.value ?: !isDarkMode
-    val classic = classicState.value ?: false
-    var dark = darkState.value ?: isDarkMode
+    var light = settingsStore.read("light",context).collectAsState(initial = "false").value.toBoolean()
+    var classic = settingsStore.read("classic",context).collectAsState(initial = "false").value.toBoolean()
+    var dark = settingsStore.read("dark",context).collectAsState(initial = "false").value.toBoolean()
 
     val allThemesFalse = !dark && !light && !classic
     Log.i("Theme","Themes are dark = $dark,light = $light,classic = $classic")
-    val hasLoadedFromStorage = lightState.value != null && classicState.value != null && darkState.value != null
-    Log.i("Theme","The values were loaded from storage $hasLoadedFromStorage")
 
-    if(allThemesFalse && !hasLoadedFromStorage){
+    if(allThemesFalse){
         dark = isDarkMode
         light = !isDarkMode
         saveThemesSettings(dark,light,false,context)
@@ -74,7 +67,6 @@ fun TestoAppTheme(
     val colorScheme = when {
         light -> LightColorScheme
         classic -> ClassicColorScheme
-        dark -> DarkColorScheme
         else -> DarkColorScheme
     }
 
@@ -87,14 +79,12 @@ fun TestoAppTheme(
         }
     }
 
-    if(hasLoadedFromStorage){
-        Crossfade(targetState = colorScheme) { scheme ->
-            MaterialTheme(
-                colorScheme = scheme,
-                typography = Typography,
-                content = content
-            )
-        }
+    Crossfade(targetState = colorScheme) { scheme ->
+        MaterialTheme(
+            colorScheme = scheme,
+            typography = Typography,
+            content = content
+        )
     }
 }
 

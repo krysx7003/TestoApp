@@ -71,9 +71,10 @@ class MainActivity : ComponentActivity() {
                 val nameOfItem = remember { mutableStateOf("") }
                 createBaseDir(context, baseDirName)
                 val navController = rememberNavController()
-                val currentRoute by navController.currentBackStackEntryFlow
-                    .map { it.destination.route }
-                    .collectAsState(initial = Main)
+                val currentBackStackEntry by navController.currentBackStackEntryFlow
+                    .collectAsState(initial = navController.currentBackStackEntry)
+                val currentRoute = currentBackStackEntry?.destination?.route ?: Main
+
                 var header by remember { mutableStateOf(MainString) }
                 Surface(
                     modifier = Modifier.fillMaxSize(),

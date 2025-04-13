@@ -200,7 +200,11 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
                 if(repeatAmount>maxAmount){
                     repeatAmount = maxAmount
                 }
-                questionFile.copy(repeat = repeatAmount )
+                val updated = questionFile.copy(repeat = repeatAmount )
+                if(_questionFile.value?.name == name) {
+                    _questionFile.value = updated
+                }
+                updated
             } else {
                 questionFile
             }
@@ -212,8 +216,16 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
             if (questionFile.name == name) {
                 val repeatAmount = questionFile.repeat - 1
                 if (repeatAmount > 0) {
-                    questionFile.copy(repeat = repeatAmount)
+                    val updated = questionFile.copy(repeat = repeatAmount )
+                    if(_questionFile.value?.name == name) {
+                        _questionFile.value = updated
+                    }
+                    updated
                 } else {
+                    val updated = questionFile.copy(repeat = 0 )
+                    if(_questionFile.value?.name == name) {
+                        _questionFile.value = updated
+                    }
                     updateCompletedQuestions(1.0)
                     null
                 }

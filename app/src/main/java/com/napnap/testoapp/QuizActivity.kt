@@ -2,7 +2,6 @@ package com.napnap.testoapp
 
 import android.app.Application
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -45,9 +44,7 @@ import com.napnap.testoapp.ui.screens.quiz.QuizScreen
 import com.napnap.testoapp.ui.screens.quiz.QuizViewModel
 import com.napnap.testoapp.ui.screens.settings.SettingsScreen
 import com.napnap.testoapp.ui.theme.TestoAppTheme
-import kotlinx.coroutines.flow.map
 import java.util.Locale
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 class QuizActivity : ComponentActivity() {
@@ -62,9 +59,9 @@ class QuizActivity : ComponentActivity() {
             TestoAppTheme(settingsStore) {
                 val application = LocalContext.current.applicationContext as Application
                 val navController = rememberNavController()
-                val currentRoute by navController.currentBackStackEntryFlow
-                    .map { it.destination.route }
-                    .collectAsState(initial = Quiz)
+                val currentBackStackEntry by navController.currentBackStackEntryFlow
+                    .collectAsState(initial = navController.currentBackStackEntry)
+                val currentRoute = currentBackStackEntry?.destination?.route ?: Quiz
                 var header by remember { mutableStateOf(QuizString) }
                 val viewModel = QuizViewModel(application,continueQuiz,dirName.toString())
 

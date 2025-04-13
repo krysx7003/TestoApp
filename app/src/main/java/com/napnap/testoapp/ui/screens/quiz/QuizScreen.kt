@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.napnap.testoapp.data.classes.Answer
 import com.napnap.testoapp.data.classes.Question
+import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.baseDirName
 import com.napnap.testoapp.toTime
 import com.napnap.testoapp.ui.theme.Green
@@ -106,7 +107,7 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel){
                     FullHeader(
                         context, question.value!!, dirName,
                         completedQuestion.value, timer.value,
-                        allQuestions.value, completion.value
+                        allQuestions.value, completion.value,questionFile.value!!
                     )
                 } ?: InProgressHeader()
             }
@@ -246,7 +247,7 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel){
 }
 
 @Composable
-fun FullHeader(context: Context, question: Question, dirName: String, completedQuestion: Double, timer: Long, allQuestions: Double, completion:Float){
+fun FullHeader(context: Context, question: Question, dirName: String, completedQuestion: Double, timer: Long, allQuestions: Double, completion:Float,questionFile: QuestionFile){
     if(question.text.startsWith("[img]") && question.text.endsWith("[/img]")){
         val imageName = question.text.removePrefix("[img]").removeSuffix("[/img]")
         val file = File(context.filesDir,"$baseDirName/$dirName/$imageName")
@@ -284,6 +285,7 @@ fun FullHeader(context: Context, question: Question, dirName: String, completedQ
         color = Green,
         trackColor = MaterialTheme.colorScheme.onPrimary
     )
+    Text("Pytanie: ${questionFile.name} Liczba powtórzeń: ${questionFile.repeat} ",fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
 }
 
 @Composable

@@ -28,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,6 +40,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SettingsScreen(values: PaddingValues,settingsStore: SettingsStore){
@@ -64,17 +66,14 @@ fun SettingsScreen(values: PaddingValues,settingsStore: SettingsStore){
 fun ThemeOptions(context: Context, settingsStore: SettingsStore){
     val isDarkMode = isSystemInDarkTheme()
     val dark = settingsStore.read("dark",context)
-        .map { it == "true" }
-        .collectAsState(initial = isDarkMode)
-        .value
+        .collectAsState(initial = isDarkMode.toString())
+        .value.toBoolean()
     val light = settingsStore.read("light",context)
-        .map { it == "true" }
-        .collectAsState(initial = !isDarkMode)
-        .value
+        .collectAsState(initial = (!isDarkMode).toString())
+        .value.toBoolean()
     val classic = settingsStore.read("classic",context)
-        .map { it == "true" }
-        .collectAsState(initial = false)
-        .value
+        .collectAsState(initial = "false")
+        .value.toBoolean()
     Column {
         Text("Motywy",
             fontSize = 30.sp,
@@ -98,7 +97,9 @@ fun ThemeOption(theme:Boolean, themes:List<Boolean>,header: String, context: Con
             .fillMaxWidth()
             .padding(10.dp)
             .clickable{
-                saveThemesSettings(dark = themes[0],light = themes[1], classic = themes[2],context)
+                runBlocking {
+                    saveThemesSettings(dark = themes[0],light = themes[1], classic = themes[2],context)
+                }
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -108,13 +109,11 @@ fun ThemeOption(theme:Boolean, themes:List<Boolean>,header: String, context: Con
     }
 }
 
-fun saveThemesSettings(dark:Boolean, light: Boolean, classic:Boolean,context: Context){
+suspend fun saveThemesSettings(dark:Boolean, light: Boolean, classic:Boolean,context: Context){
     val settingsStore = SettingsStore()
-    CoroutineScope(Dispatchers.IO).launch {
-        settingsStore.save("dark",dark.toString(),context)
-        settingsStore.save("light",light.toString(),context)
-        settingsStore.save("classic",classic.toString(),context)
-    }
+    settingsStore.save("dark",dark.toString(),context)
+    settingsStore.save("light",light.toString(),context)
+    settingsStore.save("classic",classic.toString(),context)
     Log.i("SaveThemesSettings","Saved themes dark = $dark,light = $light,classic = $classic")
 }
 

@@ -1,8 +1,12 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("io.gitlab.arturbosch.detekt")
 }
-
+detekt {
+    parallel = true
+    buildUponDefaultConfig = true 
+}
 android {
     namespace = "com.napnap.testoapp"
     compileSdk = 35
@@ -12,7 +16,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "0.6.9"
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
