@@ -2,6 +2,7 @@ package com.napnap.testoapp
 
 import android.app.Application
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -46,6 +47,7 @@ import com.napnap.testoapp.ui.screens.settings.SettingsScreen
 import com.napnap.testoapp.ui.theme.TestoAppTheme
 import kotlinx.coroutines.flow.map
 import java.util.Locale
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 class QuizActivity : ComponentActivity() {
@@ -127,7 +129,7 @@ class QuizActivity : ComponentActivity() {
                     ) {values -> NavHost(navController = navController, startDestination = Quiz, builder = {
                         composable(Quiz){
                             if(questionList.value.isNotEmpty()){
-                                QuizScreen(values,dirName.toString(),viewModel, questionList.value[1])
+                                QuizScreen(values,dirName.toString(),viewModel)
                             }
                         }
                         composable(Settings){

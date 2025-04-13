@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDateTime
+import kotlin.random.Random
 
 class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: String) : AndroidViewModel(application){
     private val _questionList = MutableStateFlow<List<QuestionFile>>(emptyList())
@@ -47,6 +48,9 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
 
     private var _question = MutableStateFlow<Question?>(null)
     val question = _question
+
+    private var _questionFile = MutableStateFlow<QuestionFile?>(null)
+    val questionFile = _questionFile
 
     private var timerJob: Job? = null
     private val globalDirName: String = dirName
@@ -135,7 +139,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         updateCompletion()
         Log.i("CalcComp","There are $allCount questions and $completedCount of them are completed giving completion rate of $completion")
     }
-    private fun updateSavedState(){
+    fun updateSavedState(){
         val context = getApplication<Application>()
         writeJson(
             context,
@@ -154,7 +158,10 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         updateSavedState()
     }
 
-    fun loadQuestion(context: Context,dirName: String,fileName: String){
+    fun loadQuestion(context: Context,dirName: String){
+        val nextQuestion = Random.nextInt(0,_questionList.value.size)
+        _questionFile.value = _questionList.value[nextQuestion]
+        val fileName = _questionFile.value?.name
         Log.i("QuizViewModel","Loading Question $fileName")
         val lineList = ArrayList<String>()
         File(context.filesDir,"$baseDirName/$dirName/$fileName").useLines { lines -> lines.forEach { lineList.add(it) }}
@@ -207,6 +214,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
                 if (repeatAmount > 0) {
                     questionFile.copy(repeat = repeatAmount)
                 } else {
+                    updateCompletedQuestions(1.0)
                     null
                 }
             } else {
