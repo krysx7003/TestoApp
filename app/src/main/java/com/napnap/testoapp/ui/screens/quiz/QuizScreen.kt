@@ -50,12 +50,13 @@ import coil.compose.AsyncImage
 import com.napnap.testoapp.data.classes.Answer
 import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.QuestionFile
-import com.napnap.testoapp.data.classes.BASE_DIR_NAME
+import com.napnap.testoapp.data.constants.BASE_DIR_NAME
+import com.napnap.testoapp.data.constants.questionMark
 import com.napnap.testoapp.toTime
-import com.napnap.testoapp.ui.theme.Green
-import com.napnap.testoapp.ui.theme.Red
-import com.napnap.testoapp.ui.theme.SoftYellow
-import com.napnap.testoapp.ui.theme.White
+import com.napnap.testoapp.data.constants.Green
+import com.napnap.testoapp.data.constants.Red
+import com.napnap.testoapp.data.constants.SoftYellow
+import com.napnap.testoapp.data.constants.White
 import java.io.File
 
 @Composable

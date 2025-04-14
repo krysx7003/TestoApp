@@ -1,4 +1,4 @@
-package com.napnap.testoapp.ui.screens.quiz
+package com.napnap.testoapp.data.constants
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType

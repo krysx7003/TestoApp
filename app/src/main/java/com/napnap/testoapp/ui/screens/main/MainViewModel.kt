@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.napnap.testoapp.data.classes.QuizData
-import com.napnap.testoapp.data.classes.BASE_DIR_NAME
-import com.napnap.testoapp.data.classes.HIST_JSON
+import com.napnap.testoapp.data.constants.BASE_DIR_NAME
+import com.napnap.testoapp.data.constants.HIST_JSON
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch

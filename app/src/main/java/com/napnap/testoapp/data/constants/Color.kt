@@ -1,4 +1,4 @@
-package com.napnap.testoapp.ui.theme
+package com.napnap.testoapp.data.constants
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,4 +1,4 @@
-package com.napnap.testoapp.data.classes
+package com.napnap.testoapp.data.constants
 
 const val QUARTER = 0.25f
 const val HALF = 0.5f

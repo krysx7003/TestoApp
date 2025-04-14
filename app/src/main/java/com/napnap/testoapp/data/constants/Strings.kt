@@ -1,4 +1,4 @@
-package com.napnap.testoapp.data.classes
+package com.napnap.testoapp.data.constants
 
 const val BASE_DIR_NAME = "data"
 const val SAVE_JSON = "save.json"

@@ -1,4 +1,4 @@
-package com.napnap.testoapp.data.classes
+package com.napnap.testoapp.data.constants
 
 const val INFO = "InfoScreen"
 const val SETTINGS = "SettingsScreen"

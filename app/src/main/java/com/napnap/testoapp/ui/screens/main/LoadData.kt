@@ -7,9 +7,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.QuizData
-import com.napnap.testoapp.data.classes.BASE_DIR_NAME
-import com.napnap.testoapp.data.classes.HIST_JSON
-import com.napnap.testoapp.data.classes.SAVE_JSON
+import com.napnap.testoapp.data.constants.BASE_DIR_NAME
+import com.napnap.testoapp.data.constants.HIST_JSON
+import com.napnap.testoapp.data.constants.SAVE_JSON
 import com.napnap.testoapp.data.stores.SettingsStore
 import kotlinx.coroutines.flow.first
 import java.io.BufferedInputStream

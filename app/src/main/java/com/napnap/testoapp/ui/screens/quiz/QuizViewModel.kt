@@ -11,11 +11,11 @@ import com.napnap.testoapp.data.classes.Answer
 import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.QuizData
-import com.napnap.testoapp.data.classes.BASE_DIR_NAME
-import com.napnap.testoapp.data.classes.HIST_JSON
-import com.napnap.testoapp.data.classes.INITIAL_MAX_AMOUNT
-import com.napnap.testoapp.data.classes.MS_TO_SEC
-import com.napnap.testoapp.data.classes.SAVE_JSON
+import com.napnap.testoapp.data.constants.BASE_DIR_NAME
+import com.napnap.testoapp.data.constants.HIST_JSON
+import com.napnap.testoapp.data.constants.INITIAL_MAX_AMOUNT
+import com.napnap.testoapp.data.constants.MS_TO_SEC
+import com.napnap.testoapp.data.constants.SAVE_JSON
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.fromTime
 import com.napnap.testoapp.toTime

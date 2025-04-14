@@ -1,4 +1,4 @@
-package com.napnap.testoapp.data.classes
+package com.napnap.testoapp.data.constants
 
 const val SEC_TO_HOUR = 3600
 const val SEC_TO_MIN = 60

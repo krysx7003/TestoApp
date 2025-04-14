@@ -4,6 +4,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
 }
 detekt {
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
     parallel = true
     buildUponDefaultConfig = true 
 }

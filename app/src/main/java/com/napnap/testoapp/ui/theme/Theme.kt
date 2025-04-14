@@ -16,6 +16,12 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.napnap.testoapp.data.constants.BlueBackground
+import com.napnap.testoapp.data.constants.BlueGrayBackground
+import com.napnap.testoapp.data.constants.BlueGrayMain
+import com.napnap.testoapp.data.constants.BlueMain
+import com.napnap.testoapp.data.constants.LightGrey
+import com.napnap.testoapp.data.constants.White
 import com.napnap.testoapp.data.stores.SettingsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
