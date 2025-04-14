@@ -7,9 +7,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.QuizData
-import com.napnap.testoapp.data.classes.baseDirName
-import com.napnap.testoapp.data.classes.histJson
-import com.napnap.testoapp.data.classes.saveJson
+import com.napnap.testoapp.data.classes.BASE_DIR_NAME
+import com.napnap.testoapp.data.classes.HIST_JSON
+import com.napnap.testoapp.data.classes.SAVE_JSON
 import com.napnap.testoapp.data.stores.SettingsStore
 import kotlinx.coroutines.flow.first
 import java.io.BufferedInputStream
@@ -36,7 +36,7 @@ suspend fun handleZipFile(uri: Uri, context: Context){
     settingsStore.read("repeatAmount",context)
     Log.i("HandlingZip","Starting to unzip ${uri.path.toString()}")
     if(uri.path.toString().isNotEmpty()){
-        val outputDir = File(context.filesDir,baseDirName)
+        val outputDir = File(context.filesDir,BASE_DIR_NAME)
         val questionFileList = ArrayList<QuestionFile>()
         var zipName = ""
         try {
@@ -53,7 +53,7 @@ suspend fun handleZipFile(uri: Uri, context: Context){
                                 file.mkdirs()
                             }
                             zipName = entry.name.removeSuffix("/")
-                            File(file,saveJson).createNewFile()
+                            File(file,SAVE_JSON).createNewFile()
                         } else {
                             file.outputStream().use { fileOutput ->
                                 if (!file.name.endsWith(".json")){
@@ -84,8 +84,8 @@ suspend fun handleZipFile(uri: Uri, context: Context){
 
 fun writeJson(context: Context,zipName: String,questionFileList: MutableList<QuestionFile> ){
     val questionJson = Gson().toJson(questionFileList)
-    val jsonFileQ = context.filesDir.resolve("$baseDirName/$zipName/$saveJson")
-    Log.i("WriteJson","Written $questionJson to file $zipName/$saveJson")
+    val jsonFileQ = context.filesDir.resolve("$BASE_DIR_NAME/$zipName/$SAVE_JSON")
+    Log.i("WriteJson","Written $questionJson to file $zipName/$SAVE_JSON")
     jsonFileQ.writeText(questionJson)
 }
 
@@ -94,7 +94,7 @@ fun isJsonArr(string: String):Boolean{
 }
 
 fun appendJson(context: Context, zipName:String,quizData: QuizData){
-    val jsonFileH = context.filesDir.resolve("$baseDirName/$histJson")
+    val jsonFileH = context.filesDir.resolve("$BASE_DIR_NAME/$HIST_JSON")
     if(jsonFileH.exists()){
         val jsonString = jsonFileH.bufferedReader().use{ it.readText() }
         if(jsonString.isNotEmpty()) {
@@ -116,7 +116,7 @@ fun appendJson(context: Context, zipName:String,quizData: QuizData){
 }
 
 fun findAndDelete(context: Context,dir: File){
-    val jsonFile = context.filesDir.resolve("$baseDirName/$histJson")
+    val jsonFile = context.filesDir.resolve("$BASE_DIR_NAME/$HIST_JSON")
     if(jsonFile.exists()){
         val jsonString = jsonFile.bufferedReader().use{ it.readText() }
         if(jsonString.isNotEmpty()) {

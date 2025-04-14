@@ -1,11 +1,11 @@
 package com.napnap.testoapp.data.classes
 
-const val Info = "InfoScreen"
-const val Settings = "SettingsScreen"
-const val Main = "MainScreen"
-const val Quiz = "QuizScreen"
+const val INFO = "InfoScreen"
+const val SETTINGS = "SettingsScreen"
+const val MAIN = "MainScreen"
+const val QUIZ = "QuizScreen"
 
-const val InfoString = "Informacje"
-const val SettingsString = "Ustawienia"
-const val MainString = ""
-const val QuizString = "Quiz: "
+const val INFO_STRING = "Informacje"
+const val SETTINGS_STRING = "Ustawienia"
+const val MAIN_STRING = ""
+const val QUIZ_STRING = "Quiz: "

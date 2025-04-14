@@ -11,9 +11,11 @@ import com.napnap.testoapp.data.classes.Answer
 import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.QuestionFile
 import com.napnap.testoapp.data.classes.QuizData
-import com.napnap.testoapp.data.classes.baseDirName
-import com.napnap.testoapp.data.classes.histJson
-import com.napnap.testoapp.data.classes.saveJson
+import com.napnap.testoapp.data.classes.BASE_DIR_NAME
+import com.napnap.testoapp.data.classes.HIST_JSON
+import com.napnap.testoapp.data.classes.INITIAL_MAX_AMOUNT
+import com.napnap.testoapp.data.classes.MS_TO_SEC
+import com.napnap.testoapp.data.classes.SAVE_JSON
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.fromTime
 import com.napnap.testoapp.toTime
@@ -57,7 +59,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
 
     private var repeatAmount: Int = 1
     private var startAmount: Int = 2
-    private var maxAmount: Int = 10
+    private var maxAmount: Int = INITIAL_MAX_AMOUNT
 
     init {
         val context = getApplication<Application>()
@@ -65,14 +67,14 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
             val settingsStore = SettingsStore()
             repeatAmount = settingsStore.read("repeatAmount",context).first().toString().toIntOrNull() ?: 1
             startAmount = settingsStore.read("startAmount",context).first().toString().toIntOrNull() ?: 2
-            maxAmount = settingsStore.read("maxAmount",context).first().toString().toIntOrNull() ?: 10
+            maxAmount = settingsStore.read("maxAmount",context).first().toString().toIntOrNull() ?: INITIAL_MAX_AMOUNT
             if(continueQuiz){
                 loadTime(context)
             }
             timerJob?.cancel()
             timerJob = viewModelScope.launch {
                 while (true){
-                    delay(1000)
+                    delay(MS_TO_SEC)
                     _timer.value++
                 }
             }
@@ -84,7 +86,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
     }
 
     private fun loadTime(context: Context) {
-        val jsonFile = context.filesDir.resolve("$baseDirName/$histJson")
+        val jsonFile = context.filesDir.resolve("$BASE_DIR_NAME/$HIST_JSON")
         if(jsonFile.exists()) {
             val jsonString = jsonFile.bufferedReader().use { it.readText() }
             if (jsonString.isNotEmpty()) {
@@ -101,7 +103,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
     }
 
     private fun loadData(context: Context,continueQuiz: Boolean){
-        val jsonFile = context.filesDir.resolve("$baseDirName/$globalDirName/$saveJson")
+        val jsonFile = context.filesDir.resolve("$BASE_DIR_NAME/$globalDirName/$SAVE_JSON")
         if(jsonFile.exists()){
             val jsonString = jsonFile.bufferedReader().use{ it.readText() }
             if(jsonString.isNotEmpty()){
@@ -111,12 +113,12 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
                 }
                 _questionList.value = data.shuffled()
                 calculateCompletion(data)
-                Log.i("LoadHistory","Loaded file $baseDirName/$globalDirName/$saveJson with ${_questionList.value.size}")
+                Log.i("LoadHistory","Loaded file $BASE_DIR_NAME/$globalDirName/$SAVE_JSON with ${_questionList.value.size}")
             }else{
-                Log.w("LoadHistory","File $baseDirName/$globalDirName/$saveJson is empty")
+                Log.w("LoadHistory","File $BASE_DIR_NAME/$globalDirName/$SAVE_JSON is empty")
             }
         }else{
-            Log.w("LoadHistory","File $baseDirName/$globalDirName/$saveJson doesn't exist")
+            Log.w("LoadHistory","File $BASE_DIR_NAME/$globalDirName/$SAVE_JSON doesn't exist")
         }
     }
 
@@ -146,7 +148,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
             globalDirName,
             questionList.value.toMutableList()
         )
-        findAndDelete(context, File(context.filesDir,"$baseDirName/$globalDirName"))
+        findAndDelete(context, File(context.filesDir,"$BASE_DIR_NAME/$globalDirName"))
         appendJson(context,globalDirName,
             QuizData(globalDirName,completion.value,timer.value.toTime(),
                 LocalDateTime.now().toString())
@@ -164,7 +166,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         val fileName = _questionFile.value?.name
         Log.i("QuizViewModel","Loading Question $fileName")
         val lineList = ArrayList<String>()
-        File(context.filesDir,"$baseDirName/$dirName/$fileName").useLines { lines -> lines.forEach { lineList.add(it) }}
+        File(context.filesDir,"$BASE_DIR_NAME/$dirName/$fileName").useLines { lines -> lines.forEach { lineList.add(it) }}
         val correctAnswer = lineList[0].removePrefix("X").toList()
         lineList.removeAt(0)
         val questionText = lineList[0].trim()

@@ -3,6 +3,7 @@ package com.napnap.testoapp.ui.screens.main
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Half
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -42,9 +43,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.napnap.testoapp.QuizActivity
-import com.napnap.testoapp.data.classes.baseDirName
-import com.napnap.testoapp.data.classes.continueExtra
-import com.napnap.testoapp.data.classes.dirNameExtra
+import com.napnap.testoapp.data.classes.BASE_DIR_NAME
+import com.napnap.testoapp.data.classes.CONTINUE_QUIZ_EXTRA
+import com.napnap.testoapp.data.classes.DIR_NAME_EXTRA
+import com.napnap.testoapp.data.classes.HALF
+import com.napnap.testoapp.data.classes.QUARTER
+import com.napnap.testoapp.data.classes.THREE_QUARTER
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.theme.Green
 import com.napnap.testoapp.ui.theme.LightGreen
@@ -224,10 +228,10 @@ fun HistoryList(startDialogVisible:MutableState<Boolean>,nameOfItem:MutableState
                         overflow = TextOverflow.Ellipsis
                     )
                     val color = when{
-                        item.completion<25.0 -> LightRed
-                        item.completion<50.0 -> Red
-                        item.completion<75.0 -> Green
-                        item.completion>75.0 -> LightGreen
+                        item.completion<QUARTER -> LightRed
+                        item.completion<HALF -> Red
+                        item.completion<THREE_QUARTER -> Green
+                        item.completion>THREE_QUARTER -> LightGreen
                         else -> MaterialTheme.colorScheme.onPrimary
                     }
                     Text(text = "${item.completion}%",
@@ -290,8 +294,8 @@ fun startQuiz(dirName:String,localContext: Context,continueQuiz:Boolean){
         val activity = localContext as? Activity
         activity?.let {
             val intent = Intent(it, QuizActivity::class.java).apply {
-                putExtra(dirNameExtra,dirName)
-                putExtra(continueExtra,continueQuiz)
+                putExtra(DIR_NAME_EXTRA,dirName)
+                putExtra(CONTINUE_QUIZ_EXTRA,continueQuiz)
             }
             it.startActivity(intent)
         }
@@ -302,7 +306,7 @@ fun startQuiz(dirName:String,localContext: Context,continueQuiz:Boolean){
 }
 
 fun isValidDir(context: Context,dirName: String):Boolean{
-    val dir = File(context.filesDir, "$baseDirName/$dirName")
+    val dir = File(context.filesDir, "$BASE_DIR_NAME/$dirName")
     Log.i("IsValid","Dir $dirName exists ${dir.exists()} and is dir ${dir.isDirectory}")
     return dir.exists() && dir.isDirectory && containsTxtFiles(dir)
 }

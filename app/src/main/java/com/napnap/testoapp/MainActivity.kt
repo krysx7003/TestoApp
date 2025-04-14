@@ -15,14 +15,14 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,13 +33,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.napnap.testoapp.data.classes.Info
-import com.napnap.testoapp.data.classes.InfoString
-import com.napnap.testoapp.data.classes.Main
-import com.napnap.testoapp.data.classes.MainString
-import com.napnap.testoapp.data.classes.Settings
-import com.napnap.testoapp.data.classes.SettingsString
-import com.napnap.testoapp.data.classes.baseDirName
+import com.napnap.testoapp.data.classes.BASE_DIR_NAME
+import com.napnap.testoapp.data.classes.INFO
+import com.napnap.testoapp.data.classes.INFO_STRING
+import com.napnap.testoapp.data.classes.MAIN
+import com.napnap.testoapp.data.classes.MAIN_STRING
+import com.napnap.testoapp.data.classes.QUIZ
+import com.napnap.testoapp.data.classes.QUIZ_STRING
+import com.napnap.testoapp.data.classes.SETTINGS
+import com.napnap.testoapp.data.classes.SETTINGS_STRING
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.screens.info.InfoScreen
 import com.napnap.testoapp.ui.screens.main.MainScreen
@@ -49,7 +51,6 @@ import com.napnap.testoapp.ui.screens.settings.SettingsScreen
 import com.napnap.testoapp.ui.theme.TestoAppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -67,117 +68,102 @@ class MainActivity : ComponentActivity() {
             val settingsStore = SettingsStore()
             TestoAppTheme(settingsStore) {
                 val context = LocalContext.current.applicationContext
+                createBaseDir(context, BASE_DIR_NAME)
                 val startDialogVisible = remember { mutableStateOf(false) }
                 val nameOfItem = remember { mutableStateOf("") }
-                createBaseDir(context, baseDirName)
-                val navController = rememberNavController()
-                val currentBackStackEntry by navController.currentBackStackEntryFlow
-                    .collectAsState(initial = navController.currentBackStackEntry)
-                val currentRoute = currentBackStackEntry?.destination?.route ?: Main
-
-                var header by remember { mutableStateOf(MainString) }
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        topBar = {
-                            TopAppBar(title = {
-                                if(currentRoute == Main){
-                                    header = MainString
-                                }
-                                Text(header,color = MaterialTheme.colorScheme.onPrimary)
-                            }, colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                titleContentColor = MaterialTheme.colorScheme.onPrimary),
-                                navigationIcon = {
-                                    if (currentRoute != Main) {
-                                        IconButton(onClick = {
-                                            navController.navigate(Main)
-                                        }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.ArrowBack,
-                                                contentDescription = "",
-                                                tint = MaterialTheme.colorScheme.onPrimary
-                                            )
-                                        }
-                                    }
-                                },
-                                actions = {
-                                    if (currentRoute != Info) {
-                                        IconButton(onClick = {
-                                            navController.navigate(Info)
-                                            header = InfoString
-                                        }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Info,
-                                                contentDescription = "",
-                                                tint = MaterialTheme.colorScheme.onPrimary
-                                            )
-                                        }
-                                    }
-                                    if (currentRoute != Settings){
-                                        IconButton(onClick = {
-                                                navController.navigate(Settings)
-                                                header = SettingsString
-                                        }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Settings,
-                                                contentDescription = "",
-                                                tint = MaterialTheme.colorScheme.onPrimary
-                                            )
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    ) {values -> NavHost(navController = navController, startDestination = Main, builder = {
-                            composable(Main){
-                                MainScreen(values,startDialogVisible,nameOfItem,getContent)
-                            }
-                            composable(Settings){
-                                SettingsScreen(values,settingsStore)
-                            }
-                            composable(Info) {
-                                InfoScreen(values)
-                            }
-                        })
+                    MainScaffold(startDialogVisible,nameOfItem,settingsStore)
+                    if(startDialogVisible.value){
+                        StartDialog(
+                            onDismiss = {
+                                startDialogVisible.value = false
+                            }, nameOfItem = nameOfItem.value, this
+                        )
                     }
-
-                }
-                if(startDialogVisible.value){
-                    StartDialog(
-                        onDismiss = {
-                            startDialogVisible.value = false
-                        },
-                        nameOfItem = nameOfItem.value,
-                    this
-                    )
                 }
             }
+
         }
 
     }
 
+    @Composable
+    fun MainScaffold( startDialogVisible: MutableState<Boolean>, nameOfItem: MutableState<String>,
+                        settingsStore: SettingsStore){
+        val navController = rememberNavController()
+        val currentBackStackEntry by navController.currentBackStackEntryFlow
+            .collectAsState(initial = navController.currentBackStackEntry)
+        val currentRoute = currentBackStackEntry?.destination?.route ?: QUIZ
+        var header by remember { mutableStateOf(QUIZ_STRING) }
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(title = {
+                    if(currentRoute == MAIN){
+                        header = MAIN_STRING
+                    }
+                    Text(header,color = MaterialTheme.colorScheme.onPrimary)
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary),
+                    navigationIcon = {
+                        if (currentRoute != MAIN) {
+                            BarButton( click = {
+                                navController.navigate(MAIN)
+                            },Icons.Filled.ArrowBack,"")
+                        }
+                    },
+                    actions = {
+                        if (currentRoute != INFO) {
+                            BarButton( click = {
+                                navController.navigate(INFO)
+                                header = INFO_STRING
+                            },Icons.Filled.Info,"")
+                        }
+                        if (currentRoute != SETTINGS){
+                            BarButton( click = {
+                                navController.navigate(SETTINGS)
+                                header = SETTINGS_STRING
+                            },Icons.Filled.Settings,"")
+                        }
+                    }
+                )
+            }
+        ) {values -> NavHost(navController = navController, startDestination = MAIN, builder = {
+                composable(MAIN){
+                    MainScreen(values,startDialogVisible,nameOfItem,getContent)
+                }
+                composable(SETTINGS){
+                    SettingsScreen(values,settingsStore)
+                }
+                composable(INFO) {
+                    InfoScreen(values)
+                }
+            })
+        }
+    }
 }
+
 
 fun createBaseDir(context: Context, dirName: String){
     val dir = File(context.filesDir,dirName)
     if (!dir.exists()) {
         if (dir.mkdir()) {
             Log.i("CreateDirectory", "Directory created at: ${dir.absolutePath}")
-            File("$baseDirName/history.json").createNewFile()
+            File("$BASE_DIR_NAME/history.json").createNewFile()
         } else {
             Log.e("CreateDirectory", "Failed to create directory")
 
         }
     } else {
         Log.i("CreateDirectory", "Directory already exists: ${dir.absolutePath}")
-        if(!File(context.filesDir,"$baseDirName/history.json").createNewFile()){
-            Log.i("HistoryJson","File $baseDirName/history.json exists")
+        if(!File(context.filesDir,"$BASE_DIR_NAME/history.json").createNewFile()){
+            Log.i("HistoryJson","File $BASE_DIR_NAME/history.json exists")
         }else{
-            Log.i("HistoryJson","File $baseDirName/history.json created")
+            Log.i("HistoryJson","File $BASE_DIR_NAME/history.json created")
         }
 
     }

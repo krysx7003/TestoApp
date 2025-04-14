@@ -50,7 +50,7 @@ import coil.compose.AsyncImage
 import com.napnap.testoapp.data.classes.Answer
 import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.QuestionFile
-import com.napnap.testoapp.data.classes.baseDirName
+import com.napnap.testoapp.data.classes.BASE_DIR_NAME
 import com.napnap.testoapp.toTime
 import com.napnap.testoapp.ui.theme.Green
 import com.napnap.testoapp.ui.theme.Red
@@ -250,7 +250,7 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel){
 fun FullHeader(context: Context, question: Question, dirName: String, completedQuestion: Double, timer: Long, allQuestions: Double, completion:Float,questionFile: QuestionFile){
     if(question.text.startsWith("[img]") && question.text.endsWith("[/img]")){
         val imageName = question.text.removePrefix("[img]").removeSuffix("[/img]")
-        val file = File(context.filesDir,"$baseDirName/$dirName/$imageName")
+        val file = File(context.filesDir,"$BASE_DIR_NAME/$dirName/$imageName")
         if(file.exists()){
             AsyncImage(
                 modifier = Modifier

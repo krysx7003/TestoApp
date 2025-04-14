@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.napnap.testoapp
 
 import android.app.Application
@@ -19,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,18 +29,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.napnap.testoapp.data.classes.Info
-import com.napnap.testoapp.data.classes.InfoString
-import com.napnap.testoapp.data.classes.Quiz
-import com.napnap.testoapp.data.classes.QuizString
-import com.napnap.testoapp.data.classes.Settings
-import com.napnap.testoapp.data.classes.SettingsString
-import com.napnap.testoapp.data.classes.continueExtra
-import com.napnap.testoapp.data.classes.dirNameExtra
+import com.napnap.testoapp.data.classes.CONTINUE_QUIZ_EXTRA
+import com.napnap.testoapp.data.classes.DIR_NAME_EXTRA
+import com.napnap.testoapp.data.classes.INFO
+import com.napnap.testoapp.data.classes.INFO_STRING
+import com.napnap.testoapp.data.classes.QUIZ
+import com.napnap.testoapp.data.classes.QUIZ_STRING
+import com.napnap.testoapp.data.classes.SEC_TO_HOUR
+import com.napnap.testoapp.data.classes.SEC_TO_MIN
+import com.napnap.testoapp.data.classes.SETTINGS
+import com.napnap.testoapp.data.classes.SETTINGS_STRING
 import com.napnap.testoapp.data.stores.SettingsStore
 import com.napnap.testoapp.ui.screens.info.InfoScreen
 import com.napnap.testoapp.ui.screens.quiz.QuizScreen
@@ -53,106 +59,102 @@ class QuizActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val settingsStore = SettingsStore()
-            val dirName = intent.extras?.getString(dirNameExtra)
-            val continueQuiz = intent.extras?.getBoolean(continueExtra) != false
+            val dirName = intent.extras?.getString(DIR_NAME_EXTRA)
+            val continueQuiz = intent.extras?.getBoolean(CONTINUE_QUIZ_EXTRA) != false
 
             TestoAppTheme(settingsStore) {
                 val application = LocalContext.current.applicationContext as Application
-                val navController = rememberNavController()
-                val currentBackStackEntry by navController.currentBackStackEntryFlow
-                    .collectAsState(initial = navController.currentBackStackEntry)
-                val currentRoute = currentBackStackEntry?.destination?.route ?: Quiz
-                var header by remember { mutableStateOf(QuizString) }
                 val viewModel = QuizViewModel(application,continueQuiz,dirName.toString())
-
-                val questionList = viewModel.questionList.collectAsState()
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        topBar = {
-                            TopAppBar(title = {
-                                if(currentRoute == Quiz){
-                                    header = QuizString+dirName.toString().removeSuffix("\\")
-                                }
-                                Text(header,color = MaterialTheme.colorScheme.onPrimary)
-                            }, colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                titleContentColor = MaterialTheme.colorScheme.onPrimary),
-                                navigationIcon = {
-                                    if (currentRoute != Quiz) {
-                                        IconButton(onClick = {
-                                            navController.navigate(Quiz)
-                                        }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.ArrowBack,
-                                                contentDescription = "",
-                                                tint = MaterialTheme.colorScheme.onPrimary
-                                            )
-                                        }
-                                    }
-                                },
-                                actions = {
-                                    if (currentRoute != Info) {
-                                        IconButton(onClick = {
-                                            navController.navigate(Info)
-                                            header = InfoString
-                                        }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Info,
-                                                contentDescription = "",
-                                                tint = MaterialTheme.colorScheme.onPrimary
-                                            )
-                                        }
-                                    }
-                                    if (currentRoute != Settings){
-                                        IconButton(onClick = {
-                                            navController.navigate(Settings)
-                                            header = SettingsString
-                                        }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Settings,
-                                                contentDescription = "",
-                                                tint = MaterialTheme.colorScheme.onPrimary
-                                            )
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    ) {values -> NavHost(navController = navController, startDestination = Quiz, builder = {
-                        composable(Quiz){
-                            if(questionList.value.isNotEmpty()){
-                                QuizScreen(values,dirName.toString(),viewModel)
-                            }
-                        }
-                        composable(Settings){
-                            SettingsScreen(values,settingsStore)
-                        }
-                        composable(Info) {
-                            InfoScreen(values)
-                        }
-                    })
-                    }
-
-                }
+                    QuizScaffold(dirName!!,viewModel,settingsStore)
                 DisposableEffect(Unit) {
                     onDispose {
                         viewModel.cleanup()
+                        }
                     }
                 }
             }
         }
     }
+
+    @Composable
+    fun QuizScaffold(dirName: String,viewModel: QuizViewModel,settingsStore: SettingsStore){
+        val navController = rememberNavController()
+        val currentBackStackEntry by navController.currentBackStackEntryFlow
+            .collectAsState(initial = navController.currentBackStackEntry)
+        val currentRoute = currentBackStackEntry?.destination?.route ?: QUIZ
+        var header by remember { mutableStateOf(QUIZ_STRING) }
+        val questionList = viewModel.questionList.collectAsState()
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(title = {
+                    if(currentRoute == QUIZ){
+                        header = QUIZ_STRING+dirName.toString().removeSuffix("\\")
+                    }
+                    Text(header,color = MaterialTheme.colorScheme.onPrimary)
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary),
+                    navigationIcon = {
+                        if (currentRoute != QUIZ) {
+                            BarButton( click = {
+                                navController.navigate(QUIZ)
+                            },Icons.Filled.ArrowBack,"")
+                        }
+                    },
+                    actions = {
+                        if (currentRoute != INFO) {
+                            BarButton( click = {
+                                navController.navigate(INFO)
+                                header = INFO_STRING
+                            },Icons.Filled.Info,"")
+                        }
+                        if (currentRoute != SETTINGS){
+                            BarButton( click = {
+                                navController.navigate(SETTINGS)
+                                header = SETTINGS_STRING
+                            },Icons.Filled.Settings,"")
+                        }
+                    }
+                )
+            }
+        ) {values -> NavHost(navController = navController, startDestination = QUIZ, builder = {
+            composable(QUIZ){
+                if(questionList.value.isNotEmpty()){
+                    QuizScreen(values,dirName.toString(),viewModel)
+                }
+            }
+            composable(SETTINGS){
+                SettingsScreen(values,settingsStore)
+            }
+            composable(INFO) {
+                InfoScreen(values)
+            }
+        })
+        }
+    }
+}
+
+@Composable
+fun BarButton(click: () -> Unit, icon: ImageVector, description: String){
+    IconButton(onClick = {click}) {
+        Icon(
+            imageVector = icon,
+            contentDescription = description,
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
+    }
 }
 
 fun Long.toTime(): String {
-    val hours = this / 3600
-    val minutes = (this % 3600) / 60
-    val remainingSeconds = this % 60
+    val hours = this / SEC_TO_HOUR
+    val minutes = (this % SEC_TO_HOUR) / SEC_TO_MIN
+    val remainingSeconds = this % SEC_TO_MIN
     return String.format(Locale.GERMANY,"%02d:%02d:%02d", hours, minutes, remainingSeconds)
 }
 
@@ -163,5 +165,5 @@ fun String.fromTime():Long{
     val minutes = timeParts[1].toInt()
     val seconds = timeParts[2].toInt()
 
-    return (hours * 3600 + minutes * 60 + seconds).toLong()
+    return (hours * SEC_TO_HOUR + minutes * SEC_TO_MIN + seconds).toLong()
 }

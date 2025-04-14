@@ -21,16 +21,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 @Composable
-fun StartDialog(
-    onDismiss:()->Unit,
-    nameOfItem: String,
-    context: Context
+fun StartDialog(onDismiss:()->Unit,
+                nameOfItem: String,
+                context: Context
 ){
     Dialog(
         onDismissRequest = onDismiss,
@@ -60,68 +60,20 @@ fun StartDialog(
                         .fillMaxWidth()
                         .padding(vertical = 10.dp),
                 ) {
-                    Button(
-                        modifier = Modifier
-                            .weight(1f),
-                        onClick = {
-                            startQuiz(nameOfItem,context,true)
-                            onDismiss()
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.background
-                        )
-                    ) {
-                        Column (
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ){
-                            Icon(
-                                modifier = Modifier
-                                    .size(40.dp),
-                                imageVector = Icons.Filled.PlayArrow,
-                                contentDescription = "",
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Text("Wznów",
-                                fontSize = 20.sp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-                    Button(
-                        modifier = Modifier
-                            .weight(1f),
-                        onClick = {
-                            startQuiz(nameOfItem,context,false)
-                            onDismiss()
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.background
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .size(40.dp),
-                                imageVector = Icons.Filled.Refresh,
-                                contentDescription = "",
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Text("Od początku",
-                                fontSize = 20.sp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
+                    DialogButton(
+                        nameOfItem,context,onDismiss,
+                        "Wznów",Icons.Filled.PlayArrow,"",
+                        true,
+                        Modifier
+                            .weight(1f)
+                    )
+                    DialogButton(
+                        nameOfItem,context,onDismiss,
+                        "Od początku",Icons.Filled.Refresh,"",
+                        false,
+                        Modifier
+                            .weight(1f)
+                    )
                 }
                 Button(
                     onClick = { onDismiss() }
@@ -133,6 +85,48 @@ fun StartDialog(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun DialogButton(nameOfItem: String,
+                 context: Context,
+                 onDismiss: () -> Unit,
+                 text: String,
+                 icon: ImageVector,
+                 description: String,
+                 continueQuiz: Boolean,
+                 modifier: Modifier
+){
+    Button(
+        modifier = modifier,
+        onClick = {
+            startQuiz(nameOfItem,context,continueQuiz)
+            onDismiss()
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    ) {
+        Column (
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
+            Icon(
+                modifier = Modifier
+                    .size(40.dp),
+                imageVector = icon,
+                contentDescription = description,
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Text(text,
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
