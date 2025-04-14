@@ -35,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +51,7 @@ import coil.compose.AsyncImage
 import com.napnap.testoapp.data.classes.Answer
 import com.napnap.testoapp.data.classes.Question
 import com.napnap.testoapp.data.classes.QuestionFile
+import com.napnap.testoapp.data.constants.ANSWER_TEXT_WEIGHT
 import com.napnap.testoapp.data.constants.BASE_DIR_NAME
 import com.napnap.testoapp.data.constants.questionMark
 import com.napnap.testoapp.toTime
@@ -142,7 +144,14 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel){
                             }
                         ) {
                             Row{
-                                Text(answer.text, modifier = Modifier.padding(15.dp).weight(1.2f),fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+                                Text(
+                                    answer.text,
+                                    modifier = Modifier
+                                        .padding(15.dp)
+                                        .weight(ANSWER_TEXT_WEIGHT),
+                                    fontSize = 20.sp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
                                 if(answered.value){
                                     val currColorList = answerColor.value.toMutableList()
                                     when {
@@ -207,48 +216,70 @@ fun QuizScreen(values: PaddingValues,dirName:String,viewModel: QuizViewModel){
                     }
                 }
             }
-            Button(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .size(70.dp)
-                    .clip(CircleShape),
-                colors = ButtonDefaults.buttonColors(containerColor = Green),
-                onClick = {
-                    if(!answered.value){
-                        if(answeredCorrectly(answerChosen.value,question.value?.answers!!)){
-                            viewModel.decQuestion(questionFile.value?.name!!)
-                            Log.i("Answer","Answered correctly")
-                        }else{
-                            viewModel.incQuestion(questionFile.value?.name!!)
-                            Log.i("Answer","Answered incorrectly")
-                        }
-                        answered.value = true
-                    }else{
-                        Log.i("Answer","Loading next question ${answered.value}")
-                        viewModel.updateSavedState()
-                        viewModel.loadQuestion(context,dirName)
-                        answered.value = false
-                    }
-                },
-            ) {
-                var icon = if(!answered.value){
-                    Icons.Filled.PlayArrow
-                }else{
-                    Icons.Filled.ArrowForward
-                }
-                Icon(
-                    imageVector = icon,
-                    contentDescription = "",
-                    tint = White,
-                    modifier = Modifier.size(100.dp)
-                )
-            }
+            NextQuestionButton(answered,viewModel,questionFile.value!!,question.value!!,context,dirName,answerChosen.value,Modifier.align(Alignment.BottomCenter))
         }
     }
 }
 
 @Composable
-fun FullHeader(context: Context, question: Question, dirName: String, completedQuestion: Double, timer: Long, allQuestions: Double, completion:Float,questionFile: QuestionFile){
+fun NextQuestionButton(
+    answered:MutableState<Boolean>,
+    viewModel: QuizViewModel,
+    questionFile: QuestionFile,
+    question: Question,
+    context: Context,
+    dirName: String,
+    answerChosen: List<Boolean>,
+    modifier: Modifier
+){
+    Button(
+        modifier = modifier
+            .size(70.dp)
+            .clip(CircleShape),
+        colors = ButtonDefaults.buttonColors(containerColor = Green),
+        onClick = {
+            if(!answered.value){
+                if(answeredCorrectly(answerChosen,question.answers)){
+                    viewModel.decQuestion(questionFile.name)
+                    Log.i("Answer","Answered correctly")
+                }else{
+                    viewModel.incQuestion(questionFile.name)
+                    Log.i("Answer","Answered incorrectly")
+                }
+                answered.value = true
+            }else{
+                Log.i("Answer","Loading next question ${answered.value}")
+                viewModel.updateSavedState()
+                viewModel.loadQuestion(context,dirName)
+                answered.value = false
+            }
+        },
+    ) {
+        var icon = if(!answered.value){
+            Icons.Filled.PlayArrow
+        }else{
+            Icons.Filled.ArrowForward
+        }
+        Icon(
+            imageVector = icon,
+            contentDescription = "",
+            tint = White,
+            modifier = Modifier.size(100.dp)
+        )
+    }
+}
+
+@Composable
+fun FullHeader(
+    context: Context,
+    question: Question,
+    dirName: String,
+    completedQuestion: Double,
+    timer: Long,
+    allQuestions: Double,
+    completion:Float,
+    questionFile: QuestionFile
+){
     if(question.text.startsWith("[img]") && question.text.endsWith("[/img]")){
         val imageName = question.text.removePrefix("[img]").removeSuffix("[/img]")
         val file = File(context.filesDir,"$BASE_DIR_NAME/$dirName/$imageName")
@@ -286,7 +317,11 @@ fun FullHeader(context: Context, question: Question, dirName: String, completedQ
         color = Green,
         trackColor = MaterialTheme.colorScheme.onPrimary
     )
-    Text("Pytanie: ${questionFile.name} Liczba powtórzeń: ${questionFile.repeat} ",fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+    Text(
+        "Pytanie: ${questionFile.name} Liczba powtórzeń: ${questionFile.repeat} ",
+        fontSize = 20.sp,
+        color = MaterialTheme.colorScheme.onPrimary
+    )
 }
 
 @Composable

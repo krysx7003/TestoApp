@@ -90,7 +90,8 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         if(jsonFile.exists()) {
             val jsonString = jsonFile.bufferedReader().use { it.readText() }
             if (jsonString.isNotEmpty()) {
-                val data : List<QuizData> = Gson().fromJson(jsonString, object : TypeToken<List<QuizData>>() {}.type)
+                val data : List<QuizData> = Gson()
+                    .fromJson(jsonString, object : TypeToken<List<QuizData>>() {}.type)
                 for(quiz in data){
                   if(quiz.name == globalDirName){
                       _timer.value = quiz.time.fromTime()
@@ -107,13 +108,15 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         if(jsonFile.exists()){
             val jsonString = jsonFile.bufferedReader().use{ it.readText() }
             if(jsonString.isNotEmpty()){
-                var data : List<QuestionFile> = Gson().fromJson(jsonString, object : TypeToken<List<QuestionFile>>() {}.type)
+                var data : List<QuestionFile> = Gson()
+                    .fromJson(jsonString, object : TypeToken<List<QuestionFile>>() {}.type)
                 if(!continueQuiz){
                     data = reinitJson(data,startAmount)
                 }
                 _questionList.value = data.shuffled()
                 calculateCompletion(data)
-                Log.i("LoadHistory","Loaded file $BASE_DIR_NAME/$globalDirName/$SAVE_JSON with ${_questionList.value.size}")
+                val size = _questionList.value.size
+                Log.i("LoadHistory","File $BASE_DIR_NAME/$globalDirName/$SAVE_JSON has $size items")
             }else{
                 Log.w("LoadHistory","File $BASE_DIR_NAME/$globalDirName/$SAVE_JSON is empty")
             }
@@ -139,7 +142,7 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         _completedQuestions.value = (completedCount).toDouble()
         _allQuestions.value = (allCount).toDouble()
         updateCompletion()
-        Log.i("CalcComp","There are $allCount questions and $completedCount of them are completed giving completion rate of $completion")
+        Log.i("CalcComp","Progress: $completedCount/$allCount($completion)")
     }
     fun updateSavedState(){
         val context = getApplication<Application>()
@@ -166,7 +169,10 @@ class QuizViewModel(application: Application,continueQuiz:Boolean,dirName: Strin
         val fileName = _questionFile.value?.name
         Log.i("QuizViewModel","Loading Question $fileName")
         val lineList = ArrayList<String>()
-        File(context.filesDir,"$BASE_DIR_NAME/$dirName/$fileName").useLines { lines -> lines.forEach { lineList.add(it) }}
+        File(context.filesDir,"$BASE_DIR_NAME/$dirName/$fileName")
+            .useLines {
+                lines -> lines.forEach { lineList.add(it) }
+            }
         val correctAnswer = lineList[0].removePrefix("X").toList()
         lineList.removeAt(0)
         val questionText = lineList[0].trim()

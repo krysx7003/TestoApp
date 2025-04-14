@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.napnap.testoapp.data.constants.DIALOG_WIDTH
 
 @Composable
 fun StartDialog(onDismiss:()->Unit,
@@ -41,7 +42,7 @@ fun StartDialog(onDismiss:()->Unit,
         Card(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
-                .fillMaxWidth(0.95f),
+                .fillMaxWidth(DIALOG_WIDTH),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.background
             )

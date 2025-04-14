@@ -27,7 +27,8 @@ class MainViewModel(context: Context) : ViewModel(){
             if(jsonFile.exists()){
                 val jsonString = jsonFile.bufferedReader().use{ it.readText() }
                 if(jsonString.isNotEmpty()){
-                    val data : List<QuizData> = Gson().fromJson(jsonString, object : TypeToken<List<QuizData>>() {}.type)
+                    val data : List<QuizData> = Gson()
+                        .fromJson(jsonString, object : TypeToken<List<QuizData>>() {}.type)
                     _quizDataHistory.value = sortQuizData(data)
                     Log.i("LoadHistory","Loaded file $BASE_DIR_NAME/$HIST_JSON with ${_quizDataHistory.value.size}")
                 }else{
